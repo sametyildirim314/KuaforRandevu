@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="KuaforRandevu.API/KuaforRandevu.API.csproj" />
+  <Project Path="KuaforRandevu.Application/KuaforRandevu.Application.csproj" />
+  <Project Path="KuaforRandevu.Domain/KuaforRandevu.Domain.csproj" />
+  <Project Path="KuaforRandevu.Infrastructure/KuaforRandevu.Infrastructure.csproj" />
+</Solution>

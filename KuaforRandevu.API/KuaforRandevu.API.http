@@ -1,0 +1,6 @@
+@KuaforRandevu.API_HostAddress = http://localhost:5252
+
+GET {{KuaforRandevu.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
