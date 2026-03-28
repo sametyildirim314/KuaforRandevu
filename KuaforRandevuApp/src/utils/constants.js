@@ -20,4 +20,5 @@ export const API_ENDPOINTS = {
   refreshToken: '/api/auth/refresh-token',
   forgotPassword: '/api/auth/forgot-password',
   resetPassword: '/api/auth/reset-password',
+  salons: '/api/salons',
 };

@@ -4,7 +4,7 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useEffect } from 'react';
 import authStore from '../store/authStore';
 import AuthStack from './AuthStack';
-import MainTab from './MainTab';
+import MainStack from './MainStack';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,7 +27,7 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <Stack.Screen name="Main" component={MainTab} />
+          <Stack.Screen name="Main" component={MainStack} />
         ) : (
           <Stack.Screen name="Auth" component={AuthStack} />
         )}

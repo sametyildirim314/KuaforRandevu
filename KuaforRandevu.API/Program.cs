@@ -54,9 +54,14 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// ── CORS (Expo / web istemci) ───────────────────────────────────────
+builder.Services.AddCors(o => o.AddPolicy("DevCors", p =>
+    p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+
 // ── Dependency Injection ─────────────────────────────────────────────
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ISalonService, SalonService>();
 
 // ── Swagger ──────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
@@ -107,15 +112,46 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("DevCors");
 app.UseAuthentication(); // Önce authentication
 app.UseAuthorization();  // Sonra authorization
 app.MapControllers();
 
-// ── İlk çalıştırmada migration uygula ───────────────────────────────
+// ── Migration + örnek salonlar ───────────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+
+    if (!db.Salons.Any())
+    {
+        db.Salons.AddRange(
+            new Salon
+            {
+                Name = "Salon Modern",
+                City = "İstanbul",
+                Address = "Bağdat Cad. No:12",
+                Phone = "+90 216 555 0001",
+                Description = "Saç kesimi, boyama ve bakım.",
+            },
+            new Salon
+            {
+                Name = "Kuaför Elite",
+                City = "Ankara",
+                Address = "Kızılay Mah. 45",
+                Phone = "+90 312 555 0002",
+                Description = "Erkek ve kadın kuaför.",
+            },
+            new Salon
+            {
+                Name = "Hair Studio",
+                City = "İzmir",
+                Address = "Alsancak 78",
+                Phone = "+90 232 555 0003",
+                Description = "Randevu ile hizmet.",
+            });
+        db.SaveChanges();
+    }
 }
 
 app.Run();

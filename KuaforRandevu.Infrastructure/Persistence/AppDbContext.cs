@@ -9,11 +9,19 @@ public class AppDbContext : IdentityDbContext<AppUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+    public DbSet<Salon> Salons => Set<Salon>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
-        // Tablo isimlerini özelleştir (isteğe bağlı, daha temiz görünür)
         builder.Entity<AppUser>().ToTable("Users");
+
+        builder.Entity<Salon>(e =>
+        {
+            e.Property(x => x.Name).HasMaxLength(200);
+            e.Property(x => x.City).HasMaxLength(100);
+            e.Property(x => x.Address).HasMaxLength(500);
+        });
     }
 }
