@@ -1,29 +1,24 @@
 import { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
+import {View,Text,StyleSheet,FlatList,TouchableOpacity,ActivityIndicator,RefreshControl,} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import api from '../../services/api';
 import { API_ENDPOINTS } from '../../utils/constants';
 import authStore from '../../store/authStore';
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
-  const { user, logout } = authStore();
-  const [salons, setSalons] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation(); // Sayfalar arası geçiş yapmamızı sağlayan hook
+  const { user, logout } = authStore(); // Kullanıcı bilgilerini ve çıkış fonksiyonunu aldık
+  
+  // useState: Bileşenin içinde veri saklamamıza ve güncellediğimizde ekranın yenilenmesine yarar
+  const [salons, setSalons] = useState([]); // Salon listesini tutar
+  const [loading, setLoading] = useState(true); // Yüklenme durumunu tutar
+  const [refreshing, setRefreshing] = useState(false); // Aşağı çekip yenileme durumunu tutar
 
+  // API'den salon verilerini çeken fonksiyon
   const loadSalons = async () => {
     try {
       const { data } = await api.get(API_ENDPOINTS.salons);
-      setSalons(data);
+      setSalons(data); // Çekilen veriyi state'e kaydet
     } catch (e) {
       console.warn(e.message);
     } finally {
@@ -32,10 +27,12 @@ export default function HomeScreen() {
     }
   };
 
+  // useEffect: Bileşen ilk açıldığında çalışacak kodları buraya yazarız
   useEffect(() => {
     loadSalons();
   }, []);
 
+  // Liste aşağı çekildiğinde verileri tekrar yükler
   const onRefresh = () => {
     setRefreshing(true);
     loadSalons();
@@ -46,21 +43,26 @@ export default function HomeScreen() {
       <Text style={styles.welcome}>Hoş geldiniz, {user?.fullName || 'Kullanıcı'}!</Text>
       <Text style={styles.sectionTitle}>Kuaför salonları</Text>
 
+      {/* Eğer veri yükleniyorsa spinner göster, yüklenmediyse listeyi göster */}
       {loading ? (
         <ActivityIndicator size="large" color="#6C5CE7" style={styles.loader} />
       ) : (
+        // FlatList: Uzun listeleri performanslı bir şekilde göstermek için kullanılır
         <FlatList
           data={salons}
-          keyExtractor={(item) => String(item.id)}
+          keyExtractor={(item) => String(item.id)} // Her eleman için benzersiz bir anahtar
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          // Liste boşsa gösterilecek bileşen
           ListEmptyComponent={
             <Text style={styles.empty}>Kayıtlı salon bulunamadı.</Text>
           }
+          // Her bir salon elemanının nasıl görüneceği
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.card}
+              // Tıklanıldığında detay sayfasına git ve salon ID'sini gönder
               onPress={() =>
                 navigation.navigate('SalonDetail', { salonId: item.id })
               }
@@ -79,6 +81,7 @@ export default function HomeScreen() {
         />
       )}
 
+      {/* Çıkış Yap butonu */}
       <TouchableOpacity style={styles.logout} onPress={logout}>
         <Text style={styles.logoutText}>Çıkış Yap</Text>
       </TouchableOpacity>

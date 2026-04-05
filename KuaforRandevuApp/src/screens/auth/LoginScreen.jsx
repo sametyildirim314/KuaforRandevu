@@ -14,13 +14,17 @@ import Button from '../../components/Button';
 import authStore from '../../store/authStore';
 
 export default function LoginScreen({ navigation }) {
+  // useState: Bileşen içinde veri (state) tutmamızı sağlar. 
+  // email değiştikçe setEmail fonksiyonu ile güncellenir.
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({}); // Giriş hatalarını tutar
+  const [loading, setLoading] = useState(false); // İşlem devam ediyor mu?
 
+  // authStore içindeki login fonksiyonuna erişiyoruz
   const login = authStore((s) => s.login);
 
+  // Girdi doğrulaması (Validation)
   const validate = () => {
     const newErrors = {};
     if (!email.trim()) newErrors.email = 'E-posta gerekli';
@@ -30,13 +34,15 @@ export default function LoginScreen({ navigation }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Giriş yap butonuna basıldığında çalışır
   const handleLogin = async () => {
-    if (!validate() || loading) return;
+    if (!validate() || loading) return; // Hata varsa veya zaten yükleniyorsa dur
 
     setLoading(true);
     try {
       await login(email.trim(), password);
     } catch (err) {
+      // Alert: Kullanıcıya mesaj kutusu gösterir
       Alert.alert('Giriş Hatası', err.message || 'Bir hata oluştu');
     } finally {
       setLoading(false);
@@ -44,13 +50,15 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
+    // KeyboardAvoidingView: Klavye açıldığında içeriğin yukarı kaymasını sağlar
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      {/* ScrollView: İçeriğin ekrana sığmadığı durumda kaydırılmasını sağlar */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="handled" // Ekrana dokunulduğunda klavyeyi kapatır
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
@@ -59,10 +67,11 @@ export default function LoginScreen({ navigation }) {
         </View>
 
         <View style={styles.form}>
+          {/* Özel Input bileşenimiz: label, value ve error gibi proplar alır */}
           <Input
             label="E-posta"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={setEmail} // Metin değiştikçe setEmail çalışır
             placeholder="ornek@email.com"
             keyboardType="email-address"
             error={errors.email}
@@ -72,7 +81,7 @@ export default function LoginScreen({ navigation }) {
             value={password}
             onChangeText={setPassword}
             placeholder="••••••••"
-            secureTextEntry
+            secureTextEntry // Şifreyi gizli (noktalı) gösterir
             error={errors.password}
           />
 
@@ -83,6 +92,7 @@ export default function LoginScreen({ navigation }) {
             <Text style={styles.forgotLinkText}>Şifremi unuttum</Text>
           </TouchableOpacity>
 
+          {/* Button: Kendi yaptığımız buton bileşeni */}
           <Button
             title="Giriş Yap"
             onPress={handleLogin}

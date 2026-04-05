@@ -6,15 +6,19 @@ import authStore from '../store/authStore';
 import AuthStack from './AuthStack';
 import MainStack from './MainStack';
 
+// Stack, ekranlar arası geçişleri (yığın mantığıyla) yöneten yapıdır.
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
+  // Giriş yapılıp yapılmadığını ve yüklenme durumunu store'dan alıyoruz
   const { isAuthenticated, isLoading, loadStoredAuth } = authStore();
 
+  // Uygulama açıldığında kayıtlı oturum bilgilerini yükler
   useEffect(() => {
     loadStoredAuth();
   }, []);
 
+  // Eğer bilgiler hala yükleniyorsa bir yükleme animasyonu (spinner) gösterir
   if (isLoading) {
     return (
       <View style={styles.loading}>
@@ -24,8 +28,11 @@ export default function AppNavigator() {
   }
 
   return (
+    // NavigationContainer, tüm navigasyon yapısını sarmalayan ana bileşendir
     <NavigationContainer>
+      {/* headerShown: false -> Ekranların üstündeki varsayılan başlığı gizler */}
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {/* Kullanıcı giriş yapmışsa ana sayfaları (Main), yapmamışsa giriş sayfalarını (Auth) gösterir */}
         {isAuthenticated ? (
           <Stack.Screen name="Main" component={MainStack} />
         ) : (

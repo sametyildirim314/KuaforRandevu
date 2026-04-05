@@ -32,4 +32,13 @@ public class SalonsController : ControllerBase
         var salon = await _salonService.GetByIdAsync(id, ct);
         return salon == null ? NotFound() : Ok(salon);
     }
+
+    /// <summary>Salona ait kuaförler (giriş gerekmez)</summary>
+    [HttpGet("{id:int}/barbers")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetBarbers(int id, CancellationToken ct)
+    {
+        var barbers = await _salonService.GetBarbersAsync(id, ct);
+        return Ok(barbers);
+    }
 }

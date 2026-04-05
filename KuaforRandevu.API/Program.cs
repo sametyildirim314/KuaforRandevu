@@ -62,6 +62,7 @@ builder.Services.AddCors(o => o.AddPolicy("DevCors", p =>
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISalonService, SalonService>();
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 
 // ── Swagger ──────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
@@ -117,39 +118,48 @@ app.UseAuthentication(); // Önce authentication
 app.UseAuthorization();  // Sonra authorization
 app.MapControllers();
 
-// ── Migration + örnek salonlar ───────────────────────────────────────
+// ── Migration + Seed Data ─────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
     db.Database.Migrate();
 
+    // Örnek salonlar
     if (!db.Salons.Any())
     {
         db.Salons.AddRange(
-            new Salon
+            new Salon { Name = "Salon Modern", City = "İstanbul", Address = "Bağdat Cad. No:12", Phone = "+90 216 555 0001", Description = "Saç kesimi, boyama ve bakım." },
+            new Salon { Name = "Kuaför Elite", City = "Ankara", Address = "Kızılay Mah. 45", Phone = "+90 312 555 0002", Description = "Erkek ve kadın kuaför." },
+            new Salon { Name = "Hair Studio", City = "İzmir", Address = "Alsancak 78", Phone = "+90 232 555 0003", Description = "Randevu ile hizmet." }
+        );
+        db.SaveChanges();
+    }
+
+    // Örnek berberler — her salona bir berber
+    if (!db.Barbers.Any())
+    {
+        var salonModern = db.Salons.First(s => s.Name == "Salon Modern");
+        var salonElite  = db.Salons.First(s => s.Name == "Kuaför Elite");
+        var salonHair   = db.Salons.First(s => s.Name == "Hair Studio");
+
+        (string Email, string FirstName, string LastName, int SalonId, string DisplayName)[] seeds =
+        [
+            ("emre@kuafor.com", "Emre", "Yılmaz", salonModern.Id, "Emre Yılmaz"),
+            ("ayse@kuafor.com", "Ayşe", "Demir",  salonElite.Id,  "Ayşe Demir"),
+            ("can@kuafor.com",  "Can",  "Kaya",   salonHair.Id,   "Can Kaya"),
+        ];
+
+        foreach (var s in seeds)
+        {
+            var user = userManager.FindByEmailAsync(s.Email).GetAwaiter().GetResult();
+            if (user == null)
             {
-                Name = "Salon Modern",
-                City = "İstanbul",
-                Address = "Bağdat Cad. No:12",
-                Phone = "+90 216 555 0001",
-                Description = "Saç kesimi, boyama ve bakım.",
-            },
-            new Salon
-            {
-                Name = "Kuaför Elite",
-                City = "Ankara",
-                Address = "Kızılay Mah. 45",
-                Phone = "+90 312 555 0002",
-                Description = "Erkek ve kadın kuaför.",
-            },
-            new Salon
-            {
-                Name = "Hair Studio",
-                City = "İzmir",
-                Address = "Alsancak 78",
-                Phone = "+90 232 555 0003",
-                Description = "Randevu ile hizmet.",
-            });
+                user = new AppUser { FirstName = s.FirstName, LastName = s.LastName, Email = s.Email, UserName = s.Email, Role = "Barber" };
+                userManager.CreateAsync(user, "Barber123!").GetAwaiter().GetResult();
+            }
+            db.Barbers.Add(new Barber { UserId = user.Id, SalonId = s.SalonId, DisplayName = s.DisplayName });
+        }
         db.SaveChanges();
     }
 }

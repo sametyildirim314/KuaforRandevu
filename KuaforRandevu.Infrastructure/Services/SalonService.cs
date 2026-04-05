@@ -1,3 +1,4 @@
+using KuaforRandevu.Application.DTOs.Barber;
 using KuaforRandevu.Application.DTOs.Salon;
 using KuaforRandevu.Application.Interfaces;
 using KuaforRandevu.Infrastructure.Persistence;
@@ -9,10 +10,7 @@ public class SalonService : ISalonService
 {
     private readonly AppDbContext _db;
 
-    public SalonService(AppDbContext db)
-    {
-        _db = db;
-    }
+    public SalonService(AppDbContext db) => _db = db;
 
     public async Task<IReadOnlyList<SalonListItemDto>> GetAllAsync(CancellationToken ct = default)
     {
@@ -22,11 +20,8 @@ public class SalonService : ISalonService
             .OrderBy(s => s.Name)
             .Select(s => new SalonListItemDto
             {
-                Id = s.Id,
-                Name = s.Name,
-                City = s.City,
-                Address = s.Address,
-                Phone = s.Phone,
+                Id = s.Id, Name = s.Name, City = s.City,
+                Address = s.Address, Phone = s.Phone,
             })
             .ToListAsync(ct);
     }
@@ -38,13 +33,27 @@ public class SalonService : ISalonService
             .Where(s => s.Id == id && s.IsActive)
             .Select(s => new SalonDetailDto
             {
-                Id = s.Id,
-                Name = s.Name,
-                City = s.City,
-                Address = s.Address,
-                Phone = s.Phone,
+                Id = s.Id, Name = s.Name, City = s.City,
+                Address = s.Address, Phone = s.Phone,
                 Description = s.Description,
             })
             .FirstOrDefaultAsync(ct);
+    }
+
+    // Salona ait aktif kuaförleri döner
+    public async Task<IReadOnlyList<BarberListDto>> GetBarbersAsync(int salonId, CancellationToken ct = default)
+    {
+        return await _db.Barbers
+            .AsNoTracking()
+            .Where(b => b.SalonId == salonId && b.IsActive)
+            .Select(b => new BarberListDto
+            {
+                Id = b.Id,
+                DisplayName = b.DisplayName,
+                SlotDurationMinutes = b.SlotDurationMinutes,
+                WorkStartHour = b.WorkStartHour,
+                WorkEndHour = b.WorkEndHour,
+            })
+            .ToListAsync(ct);
     }
 }

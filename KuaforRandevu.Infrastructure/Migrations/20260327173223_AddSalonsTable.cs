@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-#nullable disable
+#nullable disable // burda nullable disable yapıyoruz çünkü bu migration dosyasında nullable olmayan değerler var
 
 namespace KuaforRandevu.Infrastructure.Migrations
 {
@@ -31,7 +31,7 @@ namespace KuaforRandevu.Infrastructure.Migrations
                 });
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc /> // bu migration dosyasını geri almak için kullanılır
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

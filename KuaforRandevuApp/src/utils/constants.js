@@ -4,7 +4,6 @@ import { Platform } from 'react-native';
 const API_URL_OVERRIDE = null;
 
 // API Base URL - Android emülatör: 10.0.2.2, iOS: localhost
-// Fiziksel cihaz: API_URL_OVERRIDE kullanın
 export const API_BASE_URL = API_URL_OVERRIDE ?? (__DEV__
   ? Platform.select({
       android: 'http://10.0.2.2:5252',
@@ -21,4 +20,7 @@ export const API_ENDPOINTS = {
   forgotPassword: '/api/auth/forgot-password',
   resetPassword: '/api/auth/reset-password',
   salons: '/api/salons',
+  appointments: '/api/appointments',  // randevu CRUD
+  barbers: '/api/barbers',            // berber müsaitlik/randevu endpoint'leri
 };
+

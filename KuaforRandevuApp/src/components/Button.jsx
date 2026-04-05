@@ -1,23 +1,20 @@
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
+import {TouchableOpacity,Text,StyleSheet,ActivityIndicator,} from 'react-native';
 
+// Reusable (Tekrar kullanılabilir) buton bileşeni
 export default function Button({
-  title,
-  onPress,
-  variant = 'primary',
-  disabled = false,
-  loading = false,
-  style,
+  title, // Butonun üzerinde yazacak metin
+  onPress, // Butona basıldığında çalışacak fonksiyon
+  variant = 'primary', // Butonun stil tipi (primary, secondary, outline)
+  disabled = false, // Butonun tıklanabilir olup olmadığı
+  loading = false, // İşlem yapılıyorsa spinner gösterir
+  style, // Dışarıdan ekstra stil vermek için
 }) {
   const isSecondary = variant === 'secondary';
   const isOutline = variant === 'outline';
 
   return (
     <TouchableOpacity
+      // Birden fazla stili dizi şeklinde uygulayabiliyoruz
       style={[
         styles.button,
         isSecondary && styles.buttonSecondary,
@@ -29,6 +26,7 @@ export default function Button({
       disabled={disabled || loading}
       activeOpacity={0.8}
     >
+      {/* Eğer işlem yapılıyorsa (loading true) spinner göster, değilse metni göster */}
       {loading ? (
         <ActivityIndicator color={isOutline ? '#6C5CE7' : '#fff'} />
       ) : (
