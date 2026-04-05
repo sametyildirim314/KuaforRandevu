@@ -1,5 +1,6 @@
 1. Hafta videosu : https://youtu.be/zreH9NEHG-s
 2. Hafta videosu : https://youtu.be/aWOj9isG0-8
+3. Hafta videosu : https://youtu.be/TnF1XmhcPQQ
 
 # 💈 Kuaför Randevu — Barbershop Appointment System
 
