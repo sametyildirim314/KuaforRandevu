@@ -1,6 +1,6 @@
 # 📊 Kuaför Randevu Uygulaması — Detaylı Proje Raporu
 
-> Rapor Tarihi: 04 Nisan 2026 (Güncelleme: Randevu Sistemi Eklendi) | Analiz Kapsamı: Tüm backend (.NET) + Mobil uygulama (React Native)
+> Rapor Tarihi: 04 Nisan 2026 (Güncelleme: Randevu + Değlendirme Sistemi Eklendi) | Analiz Kapsamı: Tüm backend (.NET) + Mobil uygulama (React Native)
 
 ---
 
@@ -43,12 +43,13 @@ KuaforRandevuApp/src/
 ├── screens/
 │   ├── auth/    → Login, Register, ForgotPassword
 │   ├── main/    → Home, SalonDetail, Appointments, AppointmentDetail, Profile
-│   └── booking/ → BookingScreen (4 adımlı randevu akışı) ❔ YENİ
+│   ├── booking/ → BookingScreen (4 adımlı randevu akışı)
+│   └── review/  → ReviewScreen (yıldız + yorum formu) ☄️ YENİ
 ├── navigation/  → AppNavigator, AuthStack, MainStack, MainTab
-├── components/  → Button, Input
-├── store/       → authStore, appointmentStore (Zustand) ❔ YENİ
+├── components/  → Button, Input, StarRating ☄️ YENİ
+├── store/       → authStore, appointmentStore (Zustand)
 ├── services/    → api.js (Axios Instance)
-└── utils/       → constants.js (API URL'leri + yeni endpoint'ler)
+└── utils/       → constants.js (API URL'leri)
 ```
 
 ---
@@ -114,8 +115,9 @@ AppNavigator
     │   ├── AppointmentsScreen (📅)
     │   └── ProfileScreen (👤)
     ├── SalonDetailScreen
-    ├── BookingScreen       ❔ YENİ — 4 adımlı randevu akışı
-    └── AppointmentDetailScreen ❔ YENİ — detay + iptal
+    ├── BookingScreen          — 4 adımlı randevu akışı
+    ├── AppointmentDetailScreen — detay + iptal
+    └── ReviewScreen           — yıldız + yorum formu ☄️ YENİ
 ```
 
 ---
@@ -126,15 +128,17 @@ AppNavigator
 |---|---|
 | `Button.jsx` | `primary`, `secondary`, `outline` varyantları; loading spinner; disabled state |
 | `Input.jsx` | Label, hata mesajı gösterimi, secureTextEntry desteği |
+| `StarRating.jsx` | İnteraktif + salt-okunur mod, 1-5 yıldız ☄️ YENİ |
 
 ---
 
 ### ✅ 3.5 Veritabanı ve Migration'lar
 
-3 adet migration tamamlanmış:
+4 adet migration tamamlanmış:
 1. `20260323183252_InitialCreate` — Identity tabloları + Users tablosu
 2. `20260327173223_AddSalonsTable` — Salons tablosu
-3. `20260404184723_AddBarberAndAppointments` — Barbers + Appointments tabloları ❔ YENİ
+3. `20260404184723_AddBarberAndAppointments` — Barbers + Appointments tabloları
+4. `20260412183822_AddReviewsTable` — Reviews tablosu + UNIQUE index ☄️ YENİ
 
 Uygulama her başladığında `db.Database.Migrate()` çağrılıyor — yani migration'lar otomatik uygulanıyor.
 
@@ -206,18 +210,45 @@ Projenin çekirdek özelliği olan randevu sistemi tamamen hayata geçirildi.
 
 | Özellik | Durum |
 |---|---|
-| Berber entity'si | ✅ Oluşturuldu (bu oturumda) |
-| Berberin randevuları (API) | ✅ Çalışıyor |
-| Berber müaitlik sorgulama | ✅ Çalışıyor |
-| Berber mobi ekranı / dashboard'u | ❌ Yok |
+### ✅ 3.9 Değlendirme Sistemi — TAM ☄️ YENİ
 
-### ❌ 4.3 Değerlendirme (Review) Sistemi
+Kuaför değlendirme sistemi (yorum + yıldız puan) tamamen hayata geçirildi.
+
+**Backend Endpoints:**
+
+| Method | URL | Auth | Açıklama |
+|---|---|---|---|
+| POST | `/api/reviews` | ✅ | Değlendirme oluştur |
+| GET | `/api/reviews/my-review?appointmentId=` | ✅ | Randevunun değlendirmesi var mı? |
+| DELETE | `/api/reviews/{id}` | ✅ | Değlendirme sil (sahibi) |
+| GET | `/api/barbers/{id}/reviews` | Public | Kuaför değlendirmeleri |
+
+**Mobil Uygulama:**
+
+| Ekran / Bileşen | Özellik |
+|---|---|
+| `StarRating.jsx` | İnteraktif (form) + salt-okunur (liste) mod; turuncu yıldızlar |
+| `ReviewScreen.jsx` | Yıldız seçici + yorum kutusu + karakter sayıcı + gönder |
+| `AppointmentDetailScreen` | Completed randevuda “⭐ Değlendirme Yap” butonu görünür; mevcut değlendirme gösterilir |
+| `SalonDetailScreen` | Berber kartlarında ⭐ ortalama puan; berber seçici + yorum listesi |
+
+**Önemli Teknik Detaylar:**
+- **Tekrar değlendirme engeli:** `AppointmentId` üzerinde `UNIQUE` index — bir randevuya yalnızca bir review yapılabilir
+- **Otomatik ortalama hesaplama:** Her `POST`/`DELETE` sonrası `Barber.AverageRating` ve `ReviewCount` servis katmanında anlık güncellenir
+- **Erişim kontrolu:** Sadece randevunun sahibi değlendirme yapabilir; sadece review sahibi silebilir
+- **Public listing:** `GET /api/barbers/{id}/reviews` endpoint'i `[AllowAnonymous]` — giriş yapmadan salon sayfasında yorumlar görülebilir
+
+---
+
+### ⚠️ 3.10 Berber Yönetimi — Kısmi
 
 | Özellik | Durum |
 |---|---|
-| Review entity'si | ❌ Yok |
-| Review endpoint'leri | ❌ Yok |
-| Yıldız puanlama UI | ❌ Yok |
+| Berber entity'si | ✅ Mevcut |
+| Berberin randevuları (API) | ✅ Çalışıyor |
+| Berber müaitlik sorgulama | ✅ Çalışıyor |
+| Berber ortalama puanı | ✅ Otomatik hesaplanıyor ☄️ YENİ |
+| Berber mobil ekranı / dashboard'u | ❌ Yok |
 
 ### ❌ 4.4 Şifre Sıfırlama Ekranı
 
@@ -276,9 +307,9 @@ Backend'de `ExceptionMiddleware` global hata yakalamayı sağlıyor — iyi bir 
 | Auth Sistemi | %75 | ⚠️ Refresh token düzeltmesi gerekiyor |
 | Salon Yönetimi | %70 | ⚠️ CRUD eksik (sadece okuma + kuaför listesi var) |
 | Randevu Sistemi | %80 | ✅ Core özellik çalışıyor |
-| Berber Yönetimi | %40 | ⚠️ API hazır, mobil dashboard yok |
-| Review Sistemi | %0 | ❌ Hiç başlanmadı |
-| Mobil UI | %75 | ✅ Booking akışı + randevu ekranları eklendi |
+| Berber Yönetimi | %50 | ⚠️ API + puan hazır, mobil dashboard yok |
+| Değlendirme Sistemi | %85 | ✅ Tam işlevsel ☄️ YENİ |
+| Mobil UI | %85 | ✅ Review akışı + StarRating eklendi ☄️ YENİ |
 | Navigasyon | %95 | ✅ Tam çalışıyor |
 | State Yönetimi | %90 | ✅ Auth + Appointment store'lar hazır |
 | Kod Okunabilirliği | %90 | ✅ Yorumlar eklendi |
@@ -293,12 +324,12 @@ Backend'de `ExceptionMiddleware` global hata yakalamayı sağlıyor — iyi bir 
 3. Berber dashboard'u (mobil) ekleyin
 
 **Öncelik 2:**
-4. Review (değlendirme) sistemini kurun
-5. Salon arama/filtreleme özelliği ekleyin
-6. `UserRole` enum'unu doldurun
+4. Salon arama/filtreleme özelliği ekleyin
+5. `UserRole` enum'unu doldurun
+6. Favoriler sistemi
 
 ---
 
 *Bu rapor, kaynak kodu doğrudan analiz edilerek hazırlanmıştır.*  
-*Son güncelleme: Randevu Sistemi (Backend + Frontend) tamamen eklendi.*
+*Son güncelleme: Değlendirme Sistemi (Hafta 4) tamamen eklendi.*
 
