@@ -7,6 +7,9 @@ public class BarberListDto
     public int SlotDurationMinutes { get; set; }
     public int WorkStartHour { get; set; }
     public int WorkEndHour { get; set; }
+    // Ortalama puan ve toplam değerlendirme sayısı
+    public double AverageRating { get; set; }
+    public int ReviewCount { get; set; }
 }
 
 public class AvailableSlotDto

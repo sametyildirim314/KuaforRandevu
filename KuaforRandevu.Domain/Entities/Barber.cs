@@ -6,7 +6,7 @@ public class Barber
 
     // Kuaförün kullanıcı hesabı (AppUser ile 1:1 ilişki)
     public string UserId { get; set; } = string.Empty;
-    public AppUser User { get; set; } = null!;
+    public AppUser User { get; set; } = null!; 
 
     // Hangi salonla ilişkili
     public int SalonId { get; set; }
@@ -19,6 +19,10 @@ public class Barber
 
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // Değerlendirme istatistikleri — her review sonrası otomatik güncellenir
+    public double AverageRating { get; set; } = 0;
+    public int ReviewCount { get; set; } = 0;
 
     public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 }

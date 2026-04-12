@@ -53,6 +53,8 @@ public class SalonService : ISalonService
                 SlotDurationMinutes = b.SlotDurationMinutes,
                 WorkStartHour = b.WorkStartHour,
                 WorkEndHour = b.WorkEndHour,
+                AverageRating = b.AverageRating,
+                ReviewCount = b.ReviewCount,
             })
             .ToListAsync(ct);
     }

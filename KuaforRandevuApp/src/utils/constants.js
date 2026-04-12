@@ -22,5 +22,6 @@ export const API_ENDPOINTS = {
   salons: '/api/salons',
   appointments: '/api/appointments',  // randevu CRUD
   barbers: '/api/barbers',            // berber müsaitlik/randevu endpoint'leri
+  reviews: '/api/reviews',            // değerlendirme endpoint'leri
 };
 

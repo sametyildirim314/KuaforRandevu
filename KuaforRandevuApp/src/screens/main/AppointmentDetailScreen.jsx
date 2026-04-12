@@ -23,12 +23,18 @@ export default function AppointmentDetailScreen() {
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [existingReview, setExistingReview] = useState(null); // null = yükleniyor, false = yok, obje = mevcut
 
   useEffect(() => {
     api.get(`${API_ENDPOINTS.appointments}/${appointmentId}`)
       .then((r) => setAppointment(r.data))
       .catch((e) => console.warn(e.message))
       .finally(() => setLoading(false));
+
+    // Bu randevu için daha önce değlendirme yapıldı mı?
+    api.get(`${API_ENDPOINTS.reviews}/my-review?appointmentId=${appointmentId}`)
+      .then((r) => setExistingReview(r.data))
+      .catch(() => setExistingReview(false));  // 404 = değlendirme yok
   }, [appointmentId]);
 
   const handleCancel = () => {
@@ -119,6 +125,34 @@ export default function AppointmentDetailScreen() {
           )}
         </TouchableOpacity>
       )}
+
+      {/* Değlendirme butonu — tamamlandı + henüz değerlendirme yok */}
+      {appointment.status === 'Completed' && existingReview === false && (
+        <TouchableOpacity
+          style={styles.reviewBtn}
+          onPress={() => navigation.navigate('Review', {
+            appointmentId: appointment.id,
+            barberId: appointment.barberId,
+            barberName: appointment.barberName,
+          })}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.reviewBtnText}>⭐ Değlendirme Yap</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Mevcut değlendirme — zaten yapılmış ise göster */}
+      {existingReview && (
+        <View style={styles.reviewCard}>
+          <Text style={styles.reviewCardTitle}>Sizin Değlendirmeniz</Text>
+          <View style={{ flexDirection: 'row', gap: 4, marginVertical: 6 }}>
+            {[1,2,3,4,5].map((s) => (
+              <Text key={s} style={{ fontSize: 20, color: s <= existingReview.rating ? '#FFA500' : '#DDD' }}>★</Text>
+            ))}
+          </View>
+          {existingReview.comment ? <Text style={styles.reviewComment}>{existingReview.comment}</Text> : null}
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -134,7 +168,12 @@ const styles = StyleSheet.create({
   rowItem: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   rowLabel: { fontSize: 12, color: '#636E72', marginBottom: 2 },
   rowValue: { fontSize: 15, fontWeight: '600', color: '#2D3436' },
-  cancelBtn: { borderWidth: 2, borderColor: '#e74c3c', borderRadius: 14, paddingVertical: 16, alignItems: 'center' },
+  cancelBtn: { borderWidth: 2, borderColor: '#e74c3c', borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
   cancelBtnDisabled: { opacity: 0.6 },
   cancelBtnText: { color: '#e74c3c', fontWeight: '700', fontSize: 15 },
+  reviewBtn: { backgroundColor: '#6C5CE7', borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
+  reviewBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  reviewCard: { backgroundColor: '#fff', borderRadius: 14, padding: 16, borderWidth: 1.5, borderColor: '#6C5CE7' },
+  reviewCardTitle: { fontSize: 13, fontWeight: '700', color: '#6C5CE7', marginBottom: 4 },
+  reviewComment: { fontSize: 14, color: '#636E72', marginTop: 4, lineHeight: 20 },
 });

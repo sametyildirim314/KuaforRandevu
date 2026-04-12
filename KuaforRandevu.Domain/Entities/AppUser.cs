@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace KuaforRandevu.Domain.Entities;
 
-public class AppUser : IdentityUser
+public class AppUser : IdentityUser // IdentityUser'dan miras alıyoruz. 
+// Çünkü kullanıcı bilgilerini tutacağız.
+//IdentitiyUser: Email, Password, Phone Number, Security Stamp gibi bilgileri tutar.
+//Bizim eklemek istediklerimizi de buraya ekleyeceğiz.
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;

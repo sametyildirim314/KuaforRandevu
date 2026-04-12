@@ -3,6 +3,7 @@ import MainTab from './MainTab';
 import SalonDetailScreen from '../screens/main/SalonDetailScreen';
 import BookingScreen from '../screens/booking/BookingScreen';
 import AppointmentDetailScreen from '../screens/main/AppointmentDetailScreen';
+import ReviewScreen from '../screens/review/ReviewScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +37,12 @@ export default function MainStack() {
         name="AppointmentDetail"
         component={AppointmentDetailScreen}
         options={{ title: 'Randevu Detayı' }}
+      />
+      {/* Değerlendirme formu */}
+      <Stack.Screen
+        name="Review"
+        component={ReviewScreen}
+        options={{ title: 'Değerlendirme Yap' }}
       />
     </Stack.Navigator>
   );

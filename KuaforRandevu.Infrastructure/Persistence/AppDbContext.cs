@@ -13,6 +13,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Salon> Salons => Set<Salon>();
     public DbSet<Barber> Barbers => Set<Barber>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
+    public DbSet<Review> Reviews => Set<Review>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -65,6 +66,32 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.HasOne(a => a.Salon)
              .WithMany()
              .HasForeignKey(a => a.SalonId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<Review>(e =>
+        {
+            e.Property(r => r.Comment).HasMaxLength(500);
+
+            // Her randevu için yalnızca 1 değlendirme: UNIQUE constraint
+            e.HasIndex(r => r.AppointmentId).IsUnique();
+
+            // Review → Author (AppUser)
+            e.HasOne(r => r.Author)
+             .WithMany()
+             .HasForeignKey(r => r.AuthorId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            // Review → Barber
+            e.HasOne(r => r.Barber)
+             .WithMany()
+             .HasForeignKey(r => r.BarberId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            // Review → Appointment
+            e.HasOne(r => r.Appointment)
+             .WithMany()
+             .HasForeignKey(r => r.AppointmentId)
              .OnDelete(DeleteBehavior.Restrict);
         });
     }

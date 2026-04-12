@@ -63,6 +63,7 @@ builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISalonService, SalonService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 
 // ── Swagger ──────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
