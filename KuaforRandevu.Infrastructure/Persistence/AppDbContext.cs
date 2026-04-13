@@ -26,6 +26,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.Name).HasMaxLength(200);
             e.Property(x => x.City).HasMaxLength(100);
             e.Property(x => x.Address).HasMaxLength(500);
+
+            // Salon → Owner (1 kullanıcı birden fazla salona sahip olabilir)
+            e.HasOne(x => x.Owner)
+             .WithMany()
+             .HasForeignKey(x => x.OwnerId)
+             .OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<Barber>(e =>

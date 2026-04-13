@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import api from '../../services/api';
 import { API_ENDPOINTS } from '../../utils/constants';
 import authStore from '../../store/authStore';
+import { COLORS } from '../../utils/theme';
 
 export default function HomeScreen() {
   const navigation = useNavigation(); // Sayfalar arası geçiş yapmamızı sağlayan hook
@@ -45,7 +46,7 @@ export default function HomeScreen() {
 
       {/* Eğer veri yükleniyorsa spinner göster, yüklenmediyse listeyi göster */}
       {loading ? (
-        <ActivityIndicator size="large" color="#6C5CE7" style={styles.loader} />
+        <ActivityIndicator size="large" color={COLORS.primary} style={styles.loader} />
       ) : (
         // FlatList: Uzun listeleri performanslı bir şekilde göstermek için kullanılır
         <FlatList
@@ -92,31 +93,31 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: COLORS.background,
     paddingHorizontal: 16,
     paddingTop: 12,
   },
   welcome: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#2D3436',
+    color: COLORS.textPrimary,
     marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#636E72',
+    color: COLORS.textSecondary,
     marginBottom: 8,
   },
   loader: { marginTop: 40 },
   listContent: { paddingBottom: 80 },
-  empty: { color: '#636E72', textAlign: 'center', marginTop: 24 },
+  empty: { color: COLORS.textSecondary, textAlign: 'center', marginTop: 24 },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 4,

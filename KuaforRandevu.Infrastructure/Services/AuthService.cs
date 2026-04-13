@@ -1,7 +1,9 @@
 using KuaforRandevu.Application.DTOs.Auth;
 using KuaforRandevu.Application.Interfaces;
 using KuaforRandevu.Domain.Entities;
+using KuaforRandevu.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace KuaforRandevu.Infrastructure.Services;
 
@@ -9,11 +11,13 @@ public class AuthService : IAuthService
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly TokenService _tokenService;
+    private readonly AppDbContext _db;
 
-    public AuthService(UserManager<AppUser> userManager, TokenService tokenService)
+    public AuthService(UserManager<AppUser> userManager, TokenService tokenService, AppDbContext db)
     {
         _userManager = userManager;
         _tokenService = tokenService;
+        _db = db;
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
@@ -94,12 +98,22 @@ public class AuthService : IAuthService
     }
 
     // Ortak token üretme yardımcı metodu
-    private Task<AuthResponseDto> BuildAuthResponse(AppUser user)
+    private async Task<AuthResponseDto> BuildAuthResponse(AppUser user)
     {
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshToken = _tokenService.GenerateRefreshToken();
 
-        return Task.FromResult(new AuthResponseDto
+        // SalonOwner ise sahip olduğu ilk salonun ID'sini bul
+        int? salonId = null;
+        if (user.Role == "SalonOwner")
+        {
+            salonId = await _db.Salons
+                .Where(s => s.OwnerId == user.Id && s.IsActive)
+                .Select(s => (int?)s.Id)
+                .FirstOrDefaultAsync();
+        }
+
+        return new AuthResponseDto
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
@@ -109,8 +123,9 @@ public class AuthService : IAuthService
                 Id = user.Id,
                 FullName = $"{user.FirstName} {user.LastName}",
                 Email = user.Email!,
-                Role = user.Role
+                Role = user.Role,
+                SalonId = salonId,
             }
-        });
+        };
     }
-}
+}

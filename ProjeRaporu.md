@@ -297,39 +297,58 @@ Backend'de `ExceptionMiddleware` global hata yakalamayı sağlıyor — iyi bir 
 ### 5.5 README vs Gerçek Durum Farkı
 `README.md` birçok özelliği (SignalR, arama, review sistemi, favoriler, bildirimler) tamamlanmış gibi listeliyor ancak bunların hiçbiri henüz kodda yok. Bu bir planlama dokümanı niteliğinde.
 
+### Devasa Salon Yönetim Altyapısı (Hafta 4 - 2. Faz)
+
+Haftanın ikinci etabında randevu yönetimi tamamen salon merkezli bir altyapıya taşındı.
+
+*   **Yeni Role Dayalı Navigasyon (`SalonOwner`)**:
+    *   `AppUser.Role` özelliğinde "SalonOwner" rolü yapılandırıldı.
+    *   Müşteriler (`Customer`) için çalışmaya devam eden `MainStack` yanında, Salon sahipleri için tamamen bağımsız bir `SalonStack` ve özel bir alt menü (`SalonTab`) oluşturuldu. Sisteme giriş yapıldığında role göre yönlendirme yapılır.
+
+*   **Salon Dashboard'u (Backend & API)**:
+    *   `Salons` tablosuna `OwnerId` (AppUser referansı) eklendi ve 1:N yapı kuruldu.
+    *   `SalonDashboardController` dizayn edildi. 9 yeni endpoint ile Dashboard özeti (günlük randevu, bekleyen, puan vs.), Randevu durum yönetimi ve Berber CRUD işlemleri eklendi.
+
+*   **Salon Tarafı Ekranlar (React Native)**:
+    *   **DashboardScreen**: Panel özeti, günlük istatistikler, bekleyen onay sayıları.
+    *   **SalonAppointmentsScreen**: Randevuları tümü, beklemede, onaylı ve tamamlanmış sekmesel olarak (Tab Bar) yönetebilme sağlandı.
+    *   **SalonAppointmentDetailScreen**: Bireysel randevuları onaylama (`Confirm`), iptal etme (`Cancel`) ve tamamlama (`Complete`) yetkileri.
+    *   **BarbersManageScreen & BarberFormScreen**: Salonun berberlerini görüntüleme, düzenleme ve silme. Tam teşekküllü bir kuaför CRUD işlemi.
+    *   *Tematik Revizyon*: Renk paleti eski keskin mor tonundan profesyonel ve modern `Soft Teal` (#2A9D8F) paletine evrildi.
+
+*   **Güçlü Test Verisi (Seed Data)**:
+    *   5 yeni müşteri profili, esnek olarak hesaplanmış ve rastgele atanmış yaklaşık 20+ Randevu (geçmiş, bugün ve gelecek), ve onaylanmış rezervasyonlar üzerinden bol yıldızlı sahte yorumlar (Seed Data) sisteme dahil edildi.
+
 ---
 
 ## 6. Özet Tablo
 
 | Kategori | İlerleme | Durum |
 |---|---|---|
-| Backend Mimari | %90 | ✅ Sağlam temeli var |
-| Auth Sistemi | %75 | ⚠️ Refresh token düzeltmesi gerekiyor |
-| Salon Yönetimi | %70 | ⚠️ CRUD eksik (sadece okuma + kuaför listesi var) |
-| Randevu Sistemi | %80 | ✅ Core özellik çalışıyor |
-| Berber Yönetimi | %50 | ⚠️ API + puan hazır, mobil dashboard yok |
-| Değlendirme Sistemi | %85 | ✅ Tam işlevsel ☄️ YENİ |
-| Mobil UI | %85 | ✅ Review akışı + StarRating eklendi ☄️ YENİ |
-| Navigasyon | %95 | ✅ Tam çalışıyor |
-| State Yönetimi | %90 | ✅ Auth + Appointment store'lar hazır |
-| Kod Okunabilirliği | %90 | ✅ Yorumlar eklendi |
+| Backend Mimari | %95 | ✅ Çok oyunculu roller (Owner/Customer) oturdu |
+| Auth Sistemi | %80 | ⚠️ Refresh token düzeltmesi hala bekliyor |
+| Salon Yönetimi | %100 | ✅ Tamamen işlevsel dashboard ve CRUD işlemleri eklendi ☄️ YENİ |
+| Randevu Sistemi | %90 | ✅ Kompleks onay/iptal/tamamlama döngüsü kuruldu ☄️ YENİ |
+| Berber Yönetimi | %100 | ✅ Tam entegre ve dinamik (Dashboard üzerinden CRUD) ☄️ YENİ |
+| Değlendirme Sistemi | %95 | ✅ Otomatik hesaplama, Seed datalarla aktif ☄️ YENİ |
+| Mobil UI | %95 | ✅ Soft Teal teması ile UI tasarımı zenginleştirildi ☄️ YENİ |
+| Navigasyon | %100 | ✅ Role dayalı akış (Salon vs Müşteri) düzgün işliyor |
+| State Yönetimi | %90 | ✅ Auth Store ve API istekleri optimize edildi |
 
 ---
 
 ## 7. Bir Sonraki Adımlar
 
 **Öncelik 1:**
-1. `RefreshToken` tablosu ile güvenli token yenilemeyi implemente edin
-2. SMTP ile şifre sıfırlama e-postasını bağlayın
-3. Berber dashboard'u (mobil) ekleyin
+1. `RefreshToken` tablosu ile güvenli token yenilemeyi implemente etmek.
+2. SMTP sunucusu aracılığıyla şifremi unuttum özelliğini bağlamak.
+3. Salon sahibi paneline grafik istatistikler eklenebilir.
 
 **Öncelik 2:**
-4. Salon arama/filtreleme özelliği ekleyin
-5. `UserRole` enum'unu doldurun
-6. Favoriler sistemi
+4. Müşteri tarafında salon arama/filtreleme özelliği (Kategori, Kuaför, Puan bazlı)
+5. Randevu sırasında push notification entegrasyonu (Saat yaklaşınca hatırlatma)
 
 ---
 
 *Bu rapor, kaynak kodu doğrudan analiz edilerek hazırlanmıştır.*  
-*Son güncelleme: Değlendirme Sistemi (Hafta 4) tamamen eklendi.*
-
+*Son güncelleme: Hafta 4 (Değerlendirme Sistemi + Salon Dashboard) başarıyla sonuçlandı.*

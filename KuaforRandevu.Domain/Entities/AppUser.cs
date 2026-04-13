@@ -9,7 +9,7 @@ public class AppUser : IdentityUser // IdentityUser'dan miras alıyoruz.
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public string Role { get; set; } = "Customer"; // Customer | Barber | Admin
+    public string Role { get; set; } = "Customer"; // Customer | Barber | SalonOwner | Admin
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;
 }

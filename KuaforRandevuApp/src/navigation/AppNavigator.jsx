@@ -5,13 +5,15 @@ import { useEffect } from 'react';
 import authStore from '../store/authStore';
 import AuthStack from './AuthStack';
 import MainStack from './MainStack';
+import SalonStack from './SalonStack';
+import { COLORS } from '../utils/theme';
 
 // Stack, ekranlar arası geçişleri (yığın mantığıyla) yöneten yapıdır.
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
   // Giriş yapılıp yapılmadığını ve yüklenme durumunu store'dan alıyoruz
-  const { isAuthenticated, isLoading, loadStoredAuth } = authStore();
+  const { isAuthenticated, isLoading, loadStoredAuth, user } = authStore();
 
   // Uygulama açıldığında kayıtlı oturum bilgilerini yükler
   useEffect(() => {
@@ -22,20 +24,27 @@ export default function AppNavigator() {
   if (isLoading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#6C5CE7" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
 
+  // Kullanıcı rolüne göre hangi navigasyon akışının gösterileceğini belirle
+  const isSalonOwner = user?.role === 'SalonOwner';
+
   return (
     // NavigationContainer, tüm navigasyon yapısını sarmalayan ana bileşendir
     <NavigationContainer>
-      {/* headerShown: false -> Ekranların üstündeki varsayılan başlığı gizler */}
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* Kullanıcı giriş yapmışsa ana sayfaları (Main), yapmamışsa giriş sayfalarını (Auth) gösterir */}
         {isAuthenticated ? (
-          <Stack.Screen name="Main" component={MainStack} />
+          // Giriş yapılmış — role göre yönlendir
+          isSalonOwner ? (
+            <Stack.Screen name="Salon" component={SalonStack} />
+          ) : (
+            <Stack.Screen name="Main" component={MainStack} />
+          )
         ) : (
+          // Giriş yapılmamış — auth ekranları
           <Stack.Screen name="Auth" component={AuthStack} />
         )}
       </Stack.Navigator>
@@ -48,6 +57,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: COLORS.background,
   },
 });
