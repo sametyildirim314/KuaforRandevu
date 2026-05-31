@@ -36,6 +36,10 @@ public class SalonService : ISalonService
                 Id = s.Id, Name = s.Name, City = s.City,
                 Address = s.Address, Phone = s.Phone,
                 Description = s.Description,
+                Services = s.Services.Where(serv => serv.IsActive).Select(serv => new ServiceDto
+                {
+                    Id = serv.Id, Name = serv.Name, Price = serv.Price, DurationMinutes = serv.DurationMinutes
+                }).ToList()
             })
             .FirstOrDefaultAsync(ct);
     }

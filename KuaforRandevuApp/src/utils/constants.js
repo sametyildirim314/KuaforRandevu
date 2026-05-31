@@ -1,7 +1,8 @@
 import { Platform } from 'react-native';
 
 // Fiziksel cihazda test için buraya IP adresinizi yazın: 'http://192.168.1.100:5252'
-const API_URL_OVERRIDE = null;
+// Web'de localhost kullanmak için null bırakın.
+const API_URL_OVERRIDE = 'http://192.168.1.164:5252';
 
 // API Base URL - Android emülatör: 10.0.2.2, iOS: localhost
 export const API_BASE_URL = API_URL_OVERRIDE ?? (__DEV__

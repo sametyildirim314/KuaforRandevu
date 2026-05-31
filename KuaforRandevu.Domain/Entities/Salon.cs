@@ -14,4 +14,6 @@ public class Salon
     // Salon sahibi — bir kullanıcı birden fazla salona sahip olabilir (1:N)
     public string OwnerId { get; set; } = string.Empty;
     public AppUser Owner { get; set; } = null!;
+
+    public ICollection<Service> Services { get; set; } = new List<Service>();
 }

@@ -159,6 +159,26 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 
+    // ── Örnek Hizmetler (Services) ─────────────────────────────────
+    if (!db.Services.Any())
+    {
+        var salons = db.Salons.ToList();
+        var servicesToSeed = new List<Service>();
+
+        foreach (var salon in salons)
+        {
+            servicesToSeed.AddRange([
+                new Service { SalonId = salon.Id, Name = "Saç Kesimi", Price = 250m, DurationMinutes = 30 },
+                new Service { SalonId = salon.Id, Name = "Sakal Kesimi", Price = 150m, DurationMinutes = 20 },
+                new Service { SalonId = salon.Id, Name = "Saç Yıkama ve Fön", Price = 100m, DurationMinutes = 20 },
+                new Service { SalonId = salon.Id, Name = "Saç Boyama", Price = 600m, DurationMinutes = 60 },
+                new Service { SalonId = salon.Id, Name = "Cilt Bakımı", Price = 400m, DurationMinutes = 45 }
+            ]);
+        }
+        db.Services.AddRange(servicesToSeed);
+        db.SaveChanges();
+    }
+
     // ── Örnek berberler — her salona bir berber ───────────────────
     if (!db.Barbers.Any())
     {

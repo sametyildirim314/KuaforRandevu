@@ -11,6 +11,7 @@ public class CreateAppointmentDto
 public class AppointmentListDto
 {
     public int Id { get; set; }
+    public int BarberId { get; set; }
     public string BarberName { get; set; } = string.Empty;
     public string SalonName { get; set; } = string.Empty;
     public DateTime AppointedAt { get; set; }

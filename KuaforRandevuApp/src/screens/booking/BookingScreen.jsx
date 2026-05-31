@@ -26,12 +26,13 @@ const DAYS = getNextDays();
 
 export default function BookingScreen() {
   const navigation = useNavigation();
-  const { salonId, salonName } = useRoute().params;
+  const { salonId, salonName, services = [] } = useRoute().params;
   const { createAppointment } = appointmentStore();
 
   const [step, setStep] = useState(1);
   const [barbers, setBarbers] = useState([]);
   const [selectedBarber, setSelectedBarber] = useState(null);
+  const [selectedServices, setSelectedServices] = useState([]);
   const [selectedDate, setSelectedDate] = useState(DAYS[0].value);
   const [slots, setSlots] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -59,14 +60,30 @@ export default function BookingScreen() {
       .finally(() => setLoadingSlots(false));
   }, [selectedBarber, selectedDate]);
 
+  // Seçili hizmetleri toggle et (varsa çıkar, yoksa ekle)
+  const toggleService = (service) => {
+    setSelectedServices((prev) => {
+      const exists = prev.find((s) => s.id === service.id);
+      if (exists) return prev.filter((s) => s.id !== service.id);
+      return [...prev, service];
+    });
+  };
+
+  // Toplam tutar ve süre
+  const totalPrice = selectedServices.reduce((sum, s) => sum + s.price, 0);
+  const totalDuration = selectedServices.reduce((sum, s) => sum + s.durationMinutes, 0);
+
   const handleConfirm = async () => {
     if (!selectedBarber || !selectedDate || !selectedTime) return;
     setSubmitting(true);
     try {
       const appointedAt = `${selectedDate}T${selectedTime}:00`;
-      await createAppointment({ barberId: selectedBarber.id, salonId, appointedAt, notes });
+      // Seçilen hizmet adlarını not alanına ekle
+      const serviceNames = selectedServices.map((s) => s.name).join(', ');
+      const fullNotes = [`Hizmetler: ${serviceNames}`, notes].filter(Boolean).join('\n');
+      await createAppointment({ barberId: selectedBarber.id, salonId, appointedAt, notes: fullNotes });
       Alert.alert('Başarılı! 🎉', 'Randevunuz oluşturuldu.', [
-        { text: 'Randevularım', onPress: () => navigation.navigate('Appointments') },
+        { text: 'Randevularım', onPress: () => navigation.navigate('Tabs', { screen: 'Appointments' }) },
       ]);
     } catch (e) {
       Alert.alert('Hata', e.message);
@@ -105,14 +122,48 @@ export default function BookingScreen() {
     </View>
   );
 
-  // ── ADIM 2: Hizmet (sabit) ────────────────────────────────────────
+  // ── ADIM 2: Hizmet Seçimi (Çoklu) ──────────────────────────────────
   const Step2 = () => (
     <View>
-      <Text style={styles.stepTitle}>Hizmet Seçin</Text>
-      <View style={[styles.selectCard, styles.selectCardActive]}>
-        <Text style={styles.selectCardTitle}>✂️  Saç Kesimi</Text>
-        <Text style={styles.selectCardSub}>30 dk · Standart hizmet</Text>
-      </View>
+      <Text style={styles.stepTitle}>Hizmet Seçin (birden fazla seçebilirsiniz)</Text>
+      {services.length === 0 ? (
+        <Text style={{ color: '#636E72', textAlign: 'center', marginTop: 20 }}>
+          Bu salona ait hizmet bulunamadı.
+        </Text>
+      ) : (
+        <>
+          {services.map((s) => {
+            const isSelected = selectedServices.some((sel) => sel.id === s.id);
+            return (
+              <TouchableOpacity
+                key={s.id}
+                style={[styles.selectCard, isSelected && styles.selectCardActive]}
+                onPress={() => toggleService(s)}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.selectCardTitle}>{s.name}</Text>
+                    <Text style={styles.selectCardSub}>{s.durationMinutes} dk</Text>
+                  </View>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: isSelected ? '#6C5CE7' : '#2D3436', marginRight: 10 }}>
+                    {s.price} ₺
+                  </Text>
+                  <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>
+                    {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+          {selectedServices.length > 0 && (
+            <View style={styles.selectionSummary}>
+              <Text style={styles.selectionSummaryText}>
+                {selectedServices.length} hizmet seçildi — Toplam: {totalPrice} ₺ / {totalDuration} dk
+              </Text>
+            </View>
+          )}
+        </>
+      )}
     </View>
   );
 
@@ -172,7 +223,6 @@ export default function BookingScreen() {
         {[
           ['📍 Salon', salonName],
           ['👤 Kuaför', selectedBarber?.displayName],
-          ['✂️ Hizmet', 'Saç Kesimi (30 dk)'],
           ['📅 Tarih', selectedDate],
           ['🕐 Saat', selectedTime],
         ].map(([label, value]) => (
@@ -181,6 +231,25 @@ export default function BookingScreen() {
             <Text style={styles.summaryValue}>{value}</Text>
           </View>
         ))}
+
+        {/* Seçilen Hizmetler Listesi */}
+        <View style={styles.summaryDivider} />
+        <Text style={[styles.summaryLabel, { marginBottom: 8 }]}>✂️ Seçilen Hizmetler</Text>
+        {selectedServices.map((s) => (
+          <View key={s.id} style={styles.summaryServiceRow}>
+            <Text style={styles.summaryServiceName}>{s.name}</Text>
+            <Text style={styles.summaryServiceDetail}>{s.durationMinutes} dk — {s.price} ₺</Text>
+          </View>
+        ))}
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryRow}>
+          <Text style={[styles.summaryLabel, { fontWeight: '700' }]}>💰 Toplam Tutar</Text>
+          <Text style={[styles.summaryValue, { color: '#6C5CE7', fontSize: 16 }]}>{totalPrice} ₺</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={[styles.summaryLabel, { fontWeight: '700' }]}>⏱️ Toplam Süre</Text>
+          <Text style={[styles.summaryValue, { color: '#6C5CE7', fontSize: 16 }]}>{totalDuration} dk</Text>
+        </View>
       </View>
       <Text style={styles.notesLabel}>Not ekleyin (isteğe bağlı)</Text>
       <TextInput
@@ -196,6 +265,7 @@ export default function BookingScreen() {
 
   const canNext = () => {
     if (step === 1) return !!selectedBarber;
+    if (step === 2) return selectedServices.length > 0;
     if (step === 3) return !!selectedTime;
     return true;
   };
@@ -253,6 +323,11 @@ const styles = StyleSheet.create({
   selectCardActive: { borderColor: '#6C5CE7', backgroundColor: '#f0eeff' },
   selectCardTitle: { fontSize: 15, fontWeight: '700', color: '#2D3436' },
   selectCardSub: { fontSize: 13, color: '#636E72', marginTop: 2 },
+  checkbox: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: '#ddd', justifyContent: 'center', alignItems: 'center' },
+  checkboxActive: { backgroundColor: '#6C5CE7', borderColor: '#6C5CE7' },
+  checkmark: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  selectionSummary: { backgroundColor: '#f0eeff', borderRadius: 10, padding: 12, marginTop: 4 },
+  selectionSummaryText: { fontSize: 13, fontWeight: '600', color: '#6C5CE7', textAlign: 'center' },
   dateRow: { marginBottom: 8 },
   dateChip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#ddd', marginRight: 10 },
   dateChipActive: { backgroundColor: '#6C5CE7', borderColor: '#6C5CE7' },
@@ -269,6 +344,10 @@ const styles = StyleSheet.create({
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   summaryLabel: { fontSize: 14, color: '#636E72' },
   summaryValue: { fontSize: 14, fontWeight: '700', color: '#2D3436' },
+  summaryDivider: { height: 1, backgroundColor: '#eee', marginVertical: 10 },
+  summaryServiceRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
+  summaryServiceName: { fontSize: 14, fontWeight: '600', color: '#2D3436' },
+  summaryServiceDetail: { fontSize: 13, color: '#636E72' },
   notesLabel: { fontSize: 14, fontWeight: '600', color: '#2D3436', marginBottom: 8 },
   notesInput: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1.5, borderColor: '#ddd', padding: 14, fontSize: 14, textAlignVertical: 'top', minHeight: 80 },
   footer: { flexDirection: 'row', gap: 12, padding: 16, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#eee' },

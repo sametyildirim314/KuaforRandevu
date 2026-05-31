@@ -84,6 +84,22 @@ export default function SalonDetailScreen() {
       {salon.phone ? <Text style={styles.phone}>{salon.phone}</Text> : null}
       {salon.description ? <Text style={styles.desc}>{salon.description}</Text> : null}
 
+      {/* Hizmetler Listesi */}
+      {salon.services && salon.services.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Hizmetlerimiz</Text>
+          {salon.services.map((s) => (
+            <View key={s.id} style={styles.serviceRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.serviceName}>{s.name}</Text>
+                <Text style={styles.serviceDuration}>⏱ {s.durationMinutes} dk</Text>
+              </View>
+              <Text style={styles.servicePrice}>{s.price} ₺</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
       {/* Kuaförler listesi — her birinde puan özeti */}
       {barbers.length > 0 && (
         <View style={styles.section}>
@@ -116,7 +132,7 @@ export default function SalonDetailScreen() {
       {/* Randevu Al butonu */}
       <TouchableOpacity
         style={styles.bookBtn}
-        onPress={() => navigation.navigate('Booking', { salonId: salon.id, salonName: salon.name })}
+        onPress={() => navigation.navigate('Booking', { salonId: salon.id, salonName: salon.name, services: salon.services })}
         activeOpacity={0.85}
       >
         <Text style={styles.bookBtnText}>📅  Randevu Al</Text>
@@ -181,6 +197,14 @@ const styles = StyleSheet.create({
   desc: { fontSize: 16, color: '#2D3436', lineHeight: 24, marginBottom: 20 },
   section: { marginBottom: 24 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#2D3436', marginBottom: 10 },
+  serviceRow: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 8,
+    borderWidth: 1.5, borderColor: '#eee',
+  },
+  serviceName: { fontSize: 15, fontWeight: '600', color: '#2D3436' },
+  serviceDuration: { fontSize: 13, color: '#636E72', marginTop: 4 },
+  servicePrice: { fontSize: 16, fontWeight: '700', color: '#6C5CE7' },
   barberCard: {
     backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 8,
     borderWidth: 1.5, borderColor: '#eee',

@@ -185,6 +185,7 @@ public class AppointmentService : IAppointmentService
     private static AppointmentListDto ToListDto(Appointment a) => new()
     {
         Id = a.Id,
+        BarberId = a.BarberId,
         BarberName = a.Barber.DisplayName,
         SalonName = a.Salon.Name,
         AppointedAt = a.AppointedAt,
@@ -196,6 +197,7 @@ public class AppointmentService : IAppointmentService
     private static AppointmentDetailDto ToDetailDto(Appointment a) => new()
     {
         Id = a.Id,
+        BarberId = a.BarberId,
         BarberName = a.Barber.DisplayName,
         SalonName = a.Salon.Name,
         AppointedAt = a.AppointedAt,

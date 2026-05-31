@@ -14,6 +14,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Barber> Barbers => Set<Barber>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<Service> Services => Set<Service>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -32,6 +33,18 @@ public class AppDbContext : IdentityDbContext<AppUser>
              .WithMany()
              .HasForeignKey(x => x.OwnerId)
              .OnDelete(DeleteBehavior.Restrict);
+
+            // Salon → Services (1 salonun birden fazla hizmeti olabilir)
+            e.HasMany(x => x.Services)
+             .WithOne(s => s.Salon)
+             .HasForeignKey(s => s.SalonId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Service>(e =>
+        {
+            e.Property(s => s.Name).HasMaxLength(150);
+            e.Property(s => s.Price).HasColumnType("decimal(18,2)");
         });
 
         builder.Entity<Barber>(e =>
