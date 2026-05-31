@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity,
+  View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Alert,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import api from '../../services/api';
@@ -20,6 +20,29 @@ export default function SalonDetailScreen() {
   const [selectedBarberId, setSelectedBarberId] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+
+  // Favori durumu
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    api.get(`/api/favorites/${salonId}/check`)
+      .then((r) => setIsFavorite(r.data.isFavorite))
+      .catch((e) => console.warn(e.message));
+  }, [salonId]);
+
+  const toggleFavorite = async () => {
+    try {
+      if (isFavorite) {
+        await api.delete(`/api/favorites/${salonId}`);
+        setIsFavorite(false);
+      } else {
+        await api.post(`/api/favorites`, { salonId });
+        setIsFavorite(true);
+      }
+    } catch (e) {
+      Alert.alert('Hata', 'Favori işlemi gerçekleştirilemedi.');
+    }
+  };
 
   // Salon + berberler yükle
   useEffect(() => {
@@ -79,8 +102,15 @@ export default function SalonDetailScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{salon.name}</Text>
-      <Text style={styles.meta}>{salon.city} · {salon.address}</Text>
+      <View style={styles.headerRow}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>{salon.name}</Text>
+          <Text style={styles.meta}>{salon.city} · {salon.address}</Text>
+        </View>
+        <TouchableOpacity onPress={toggleFavorite} style={styles.favBtn} activeOpacity={0.7}>
+          <Text style={styles.favIcon}>{isFavorite ? '❤️' : '🤍'}</Text>
+        </TouchableOpacity>
+      </View>
       {salon.phone ? <Text style={styles.phone}>{salon.phone}</Text> : null}
       {salon.description ? <Text style={styles.desc}>{salon.description}</Text> : null}
 
@@ -111,10 +141,21 @@ export default function SalonDetailScreen() {
               onPress={() => setSelectedBarberId(b.id)}
               activeOpacity={0.8}
             >
-              <Text style={styles.barberName}>{b.displayName}</Text>
-              <Text style={styles.barberInfo}>
-                {b.workStartHour}:00 – {b.workEndHour}:00 · {b.slotDurationMinutes} dk seans
-              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.barberName}>{b.displayName}</Text>
+                  <Text style={styles.barberInfo}>
+                    {b.workStartHour}:00 – {b.workEndHour}:00 · {b.slotDurationMinutes} dk seans
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.portfolioBtn}
+                  onPress={() => navigation.navigate('BarberPortfolio', { barberId: b.id, barberName: b.displayName })}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.portfolioBtnText}>🎨 Portfolyo</Text>
+                </TouchableOpacity>
+              </View>
               {/* Puan özeti */}
               <View style={styles.ratingRow}>
                 <StarRating value={Math.round(b.averageRating)} readonly size={14} />
@@ -236,4 +277,9 @@ const styles = StyleSheet.create({
   reviewAuthor: { fontSize: 14, fontWeight: '700', color: '#2D3436' },
   reviewDate: { fontSize: 12, color: '#aaa' },
   reviewComment: { fontSize: 14, color: '#636E72', marginTop: 6, lineHeight: 20 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  favBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: '#eee' },
+  favIcon: { fontSize: 20 },
+  portfolioBtn: { backgroundColor: '#f0eeff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: '#6C5CE7' },
+  portfolioBtnText: { color: '#6C5CE7', fontSize: 12, fontWeight: '700' },
 });

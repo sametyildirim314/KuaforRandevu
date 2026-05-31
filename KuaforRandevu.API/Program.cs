@@ -66,6 +66,9 @@ builder.Services.AddScoped<ISalonService, SalonService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ISalonDashboardService, SalonDashboardService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<IGalleryService, GalleryService>();
+builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 
 // ── Swagger ──────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
@@ -117,6 +120,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("DevCors");
+app.UseStaticFiles(); // Serve static files from wwwroot
 app.UseAuthentication(); // Önce authentication
 app.UseAuthorization();  // Sonra authorization
 app.MapControllers();

@@ -8,4 +8,5 @@ public interface ISalonService
     Task<IReadOnlyList<SalonListItemDto>> GetAllAsync(CancellationToken ct = default);
     Task<SalonDetailDto?> GetByIdAsync(int id, CancellationToken ct = default);
     Task<IReadOnlyList<BarberListDto>> GetBarbersAsync(int salonId, CancellationToken ct = default);
+    Task<IReadOnlyList<SalonListItemDto>> SearchAsync(string? q, string? category, double? minRating, decimal? maxPrice, CancellationToken ct = default);
 }

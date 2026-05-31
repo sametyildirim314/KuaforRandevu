@@ -62,4 +62,54 @@ public class SalonService : ISalonService
             })
             .ToListAsync(ct);
     }
+
+    public async Task<IReadOnlyList<SalonListItemDto>> SearchAsync(string? q, string? category, double? minRating, decimal? maxPrice, CancellationToken ct = default)
+    {
+        var query = _db.Salons
+            .AsNoTracking()
+            .Include(s => s.Services)
+            .Where(s => s.IsActive);
+
+        // 1. Arama anahtar kelimesi (Ad, Şehir, Adres, Açıklama)
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = q.Trim().ToLower();
+            query = query.Where(s => s.Name.ToLower().Contains(term) ||
+                                     s.City.ToLower().Contains(term) ||
+                                     s.Address.ToLower().Contains(term) ||
+                                     (s.Description != null && s.Description.ToLower().Contains(term)));
+        }
+
+        // 2. Kategori/Hizmet Filtresi
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            var cat = category.Trim().ToLower();
+            query = query.Where(s => s.Services.Any(serv => serv.IsActive && serv.Name.ToLower().Contains(cat)));
+        }
+
+        // 3. Puan Filtresi
+        if (minRating.HasValue && minRating.Value > 0)
+        {
+            query = query.Where(s => _db.Barbers.Any(b => b.SalonId == s.Id && b.IsActive) && 
+                                     _db.Barbers.Where(b => b.SalonId == s.Id && b.IsActive).Average(b => b.AverageRating) >= minRating.Value);
+        }
+
+        // 4. Maksimum Fiyat Filtresi
+        if (maxPrice.HasValue && maxPrice.Value > 0)
+        {
+            query = query.Where(s => s.Services.Any(serv => serv.IsActive && serv.Price <= maxPrice.Value));
+        }
+
+        return await query
+            .OrderBy(s => s.Name)
+            .Select(s => new SalonListItemDto
+            {
+                Id = s.Id,
+                Name = s.Name,
+                City = s.City,
+                Address = s.Address,
+                Phone = s.Phone
+            })
+            .ToListAsync(ct);
+    }
 }

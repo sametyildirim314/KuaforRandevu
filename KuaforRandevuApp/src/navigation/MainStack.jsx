@@ -4,6 +4,7 @@ import SalonDetailScreen from '../screens/main/SalonDetailScreen';
 import BookingScreen from '../screens/booking/BookingScreen';
 import AppointmentDetailScreen from '../screens/main/AppointmentDetailScreen';
 import ReviewScreen from '../screens/review/ReviewScreen';
+import BarberPortfolioScreen from '../screens/main/BarberPortfolioScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -43,6 +44,12 @@ export default function MainStack() {
         name="Review"
         component={ReviewScreen}
         options={{ title: 'Değerlendirme Yap' }}
+      />
+      {/* Kuaför portfolyo */}
+      <Stack.Screen
+        name="BarberPortfolio"
+        component={BarberPortfolioScreen}
+        options={{ title: 'Kuaför Portfolyosu' }}
       />
     </Stack.Navigator>
   );

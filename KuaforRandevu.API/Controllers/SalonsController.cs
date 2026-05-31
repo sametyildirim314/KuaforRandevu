@@ -41,4 +41,18 @@ public class SalonsController : ControllerBase
         var barbers = await _salonService.GetBarbersAsync(id, ct);
         return Ok(barbers);
     }
+
+    /// <summary>Gelişmiş salon arama ve filtreleme (giriş gerekmez)</summary>
+    [HttpGet("search")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Search(
+        [FromQuery] string? q, 
+        [FromQuery] string? category, 
+        [FromQuery] double? minRating, 
+        [FromQuery] decimal? maxPrice, 
+        CancellationToken ct)
+    {
+        var list = await _salonService.SearchAsync(q, category, minRating, maxPrice, ct);
+        return Ok(list);
+    }
 }

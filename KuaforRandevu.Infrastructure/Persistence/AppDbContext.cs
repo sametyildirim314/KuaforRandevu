@@ -15,6 +15,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<Service> Services => Set<Service>();
+    public DbSet<GalleryImage> GalleryImages => Set<GalleryImage>();
+    public DbSet<Favorite> Favorites => Set<Favorite>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -112,6 +114,35 @@ public class AppDbContext : IdentityDbContext<AppUser>
              .WithMany()
              .HasForeignKey(r => r.AppointmentId)
              .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<GalleryImage>(e =>
+        {
+            e.Property(gi => gi.ImageUrl).HasMaxLength(500);
+
+            // GalleryImage -> Barber
+            e.HasOne(gi => gi.Barber)
+             .WithMany()
+             .HasForeignKey(gi => gi.BarberId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Favorite>(e =>
+        {
+            // CustomerId & SalonId UNIQUE index
+            e.HasIndex(f => new { f.CustomerId, f.SalonId }).IsUnique();
+
+            // Favorite -> Customer
+            e.HasOne(f => f.Customer)
+             .WithMany()
+             .HasForeignKey(f => f.CustomerId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            // Favorite -> Salon
+            e.HasOne(f => f.Salon)
+             .WithMany()
+             .HasForeignKey(f => f.SalonId)
+             .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

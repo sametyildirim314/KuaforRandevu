@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import HomeScreen from '../screens/main/HomeScreen';
 import AppointmentsScreen from '../screens/main/AppointmentsScreen';
+import FavoritesScreen from '../screens/main/FavoritesScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
@@ -10,6 +11,7 @@ function TabIcon({ name, focused }) {
   const icons = {
     Home: '🏠',
     Appointments: '📅',
+    Favorites: '❤️',
     Profile: '👤',
   };
   return <Text style={{ fontSize: 24 }}>{icons[name] || '•'}</Text>;
@@ -42,6 +44,11 @@ export default function MainTab() {
         name="Appointments"
         component={AppointmentsScreen}
         options={{ title: 'Randevular' }}
+      />
+      <Tab.Screen
+        name="Favorites"
+        component={FavoritesScreen}
+        options={{ title: 'Favoriler' }}
       />
       <Tab.Screen
         name="Profile"
