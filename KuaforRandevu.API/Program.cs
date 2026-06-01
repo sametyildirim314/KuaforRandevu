@@ -1,5 +1,7 @@
 using System.Text;
+using KuaforRandevu.API.Hubs;
 using KuaforRandevu.API.Middleware;
+using KuaforRandevu.API.Services;
 using KuaforRandevu.Application.Interfaces;
 using KuaforRandevu.Domain.Entities;
 using KuaforRandevu.Infrastructure.Persistence;
@@ -53,11 +55,26 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
+
+    // SignalR bağlantısında JWT token query string üzerinden gelir
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // ── CORS (Expo / web istemci) ───────────────────────────────────────
 builder.Services.AddCors(o => o.AddPolicy("DevCors", p =>
-    p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+    p.SetIsOriginAllowed(_ => true).AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
 
 // ── Dependency Injection ─────────────────────────────────────────────
 builder.Services.AddScoped<TokenService>();
@@ -69,6 +86,11 @@ builder.Services.AddScoped<ISalonDashboardService, SalonDashboardService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddScoped<IGalleryService, GalleryService>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
+builder.Services.AddScoped<ISignalRNotificationService, SignalRNotificationService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
+builder.Services.AddHttpClient(); // Expo Push API için
+builder.Services.AddHostedService<AppointmentReminderService>(); // Randevu hatırlatma
 
 // ── Swagger ──────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
@@ -106,6 +128,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR(); // Gerçek zamanlı bildirimler için
 
 var app = builder.Build();
 
@@ -124,6 +147,7 @@ app.UseStaticFiles(); // Serve static files from wwwroot
 app.UseAuthentication(); // Önce authentication
 app.UseAuthorization();  // Sonra authorization
 app.MapControllers();
+app.MapHub<NotificationHub>("/hubs/notifications"); // SignalR hub mapping
 
 // ── Migration + Seed Data ─────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())

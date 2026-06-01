@@ -17,6 +17,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Service> Services => Set<Service>();
     public DbSet<GalleryImage> GalleryImages => Set<GalleryImage>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -142,6 +143,22 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.HasOne(f => f.Salon)
              .WithMany()
              .HasForeignKey(f => f.SalonId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Notification>(e =>
+        {
+            e.Property(n => n.Title).HasMaxLength(200);
+            e.Property(n => n.Message).HasMaxLength(500);
+            e.Property(n => n.Type).HasMaxLength(50);
+
+            // UserId üzerine index — kullanıcının bildirimlerini hızlı sorgulamak için
+            e.HasIndex(n => n.UserId);
+
+            // Notification → User
+            e.HasOne(n => n.User)
+             .WithMany()
+             .HasForeignKey(n => n.UserId)
              .OnDelete(DeleteBehavior.Cascade);
         });
     }

@@ -11,8 +11,13 @@ namespace KuaforRandevu.Infrastructure.Services;
 public class AppointmentService : IAppointmentService
 {
     private readonly AppDbContext _db;
+    private readonly INotificationService _notificationSvc;
 
-    public AppointmentService(AppDbContext db) => _db = db;
+    public AppointmentService(AppDbContext db, INotificationService notificationSvc)
+    {
+        _db = db;
+        _notificationSvc = notificationSvc;
+    }
 
     // ── Randevu Oluştur ──────────────────────────────────────────────
     public async Task<AppointmentDetailDto> CreateAsync(string customerId, CreateAppointmentDto dto, CancellationToken ct = default)
@@ -55,6 +60,21 @@ public class AppointmentService : IAppointmentService
 
         _db.Appointments.Add(appointment);
         await _db.SaveChangesAsync(ct);
+
+        // Salon sahibine bildirim gönder
+        var salon = await _db.Salons.AsNoTracking().FirstOrDefaultAsync(s => s.Id == dto.SalonId, ct);
+        if (salon != null)
+        {
+            var customer = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == customerId, ct);
+            var customerName = customer != null ? $"{customer.FirstName} {customer.LastName}".Trim() : "Bir müşteri";
+            await _notificationSvc.CreateAndSendAsync(
+                salon.OwnerId,
+                "Yeni Randevu 📅",
+                $"{customerName}, {barber.DisplayName} için {dto.AppointedAt:dd MMM yyyy HH:mm} tarihinde randevu aldı.",
+                Domain.Enums.NotificationType.NewAppointment,
+                appointment.Id,
+                ct);
+        }
 
         return (await LoadDetailAsync(appointment.Id, ct))!;
     }
@@ -182,31 +202,44 @@ public class AppointmentService : IAppointmentService
         return appt == null ? null : ToDetailDto(appt);
     }
 
-    private static AppointmentListDto ToListDto(Appointment a) => new()
-    {
-        Id = a.Id,
-        BarberId = a.BarberId,
-        BarberName = a.Barber.DisplayName,
-        SalonName = a.Salon.Name,
-        AppointedAt = a.AppointedAt,
-        DurationMinutes = a.DurationMinutes,
-        Status = a.Status.ToString(),
-        StatusLabel = StatusLabel(a.Status),
-    };
+    /// Randevunun süresi dolmuş mu kontrol eder (Pending veya Confirmed iken zaman geçmişse)
+    private static bool IsExpired(Appointment a) =>
+        a.Status is AppointmentStatus.Pending or AppointmentStatus.Confirmed &&
+        a.AppointedAt.AddMinutes(a.DurationMinutes) < DateTime.Now;
 
-    private static AppointmentDetailDto ToDetailDto(Appointment a) => new()
+    private static AppointmentListDto ToListDto(Appointment a)
     {
-        Id = a.Id,
-        BarberId = a.BarberId,
-        BarberName = a.Barber.DisplayName,
-        SalonName = a.Salon.Name,
-        AppointedAt = a.AppointedAt,
-        DurationMinutes = a.DurationMinutes,
-        Status = a.Status.ToString(),
-        StatusLabel = StatusLabel(a.Status),
-        Notes = a.Notes,
-        CreatedAt = a.CreatedAt,
-    };
+        var expired = IsExpired(a);
+        return new()
+        {
+            Id = a.Id,
+            BarberId = a.BarberId,
+            BarberName = a.Barber.DisplayName,
+            SalonName = a.Salon.Name,
+            AppointedAt = a.AppointedAt,
+            DurationMinutes = a.DurationMinutes,
+            Status = expired ? "Expired" : a.Status.ToString(),
+            StatusLabel = expired ? "Süresi Doldu" : StatusLabel(a.Status),
+        };
+    }
+
+    private static AppointmentDetailDto ToDetailDto(Appointment a)
+    {
+        var expired = IsExpired(a);
+        return new()
+        {
+            Id = a.Id,
+            BarberId = a.BarberId,
+            BarberName = a.Barber.DisplayName,
+            SalonName = a.Salon.Name,
+            AppointedAt = a.AppointedAt,
+            DurationMinutes = a.DurationMinutes,
+            Status = expired ? "Expired" : a.Status.ToString(),
+            StatusLabel = expired ? "Süresi Doldu" : StatusLabel(a.Status),
+            Notes = a.Notes,
+            CreatedAt = a.CreatedAt,
+        };
+    }
 
     private static string StatusLabel(AppointmentStatus s) => s switch
     {

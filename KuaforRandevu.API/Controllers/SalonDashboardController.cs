@@ -26,6 +26,10 @@ public class SalonDashboardController : ControllerBase
     public async Task<IActionResult> GetAppointments([FromQuery] int salonId, [FromQuery] string? status, CancellationToken ct)
         => Ok(await _svc.GetSalonAppointmentsAsync(UserId, salonId, status, ct));
 
+    [HttpGet("appointments/{id:int}")]
+    public async Task<IActionResult> GetAppointment(int id, CancellationToken ct)
+        => Ok(await _svc.GetAppointmentAsync(UserId, id, ct));
+
     [HttpPut("appointments/{id:int}/confirm")]
     public async Task<IActionResult> Confirm(int id, CancellationToken ct)
     {

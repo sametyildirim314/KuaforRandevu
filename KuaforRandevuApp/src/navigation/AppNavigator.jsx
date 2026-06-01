@@ -7,6 +7,8 @@ import AuthStack from './AuthStack';
 import MainStack from './MainStack';
 import SalonStack from './SalonStack';
 import { COLORS } from '../utils/theme';
+import signalRService from '../services/signalRService';
+import { registerForPushNotificationsAsync } from '../services/pushNotificationService';
 
 // Stack, ekranlar arası geçişleri (yığın mantığıyla) yöneten yapıdır.
 const Stack = createNativeStackNavigator();
@@ -19,6 +21,16 @@ export default function AppNavigator() {
   useEffect(() => {
     loadStoredAuth();
   }, []);
+
+  // Giriş yapıldığında SignalR başlat ve Push Token al
+  useEffect(() => {
+    if (isAuthenticated) {
+      signalRService.startConnection();
+      registerForPushNotificationsAsync();
+    } else {
+      signalRService.stopConnection();
+    }
+  }, [isAuthenticated]);
 
   // Eğer bilgiler hala yükleniyorsa bir yükleme animasyonu (spinner) gösterir
   if (isLoading) {

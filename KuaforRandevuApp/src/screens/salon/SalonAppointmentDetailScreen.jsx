@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Alert,
@@ -9,10 +9,33 @@ import { COLORS, SHADOW, STATUS_COLORS } from '../../utils/theme';
 
 export default function SalonAppointmentDetailScreen() {
   const navigation = useNavigation();
-  const { appointment } = useRoute().params;
-  const [status, setStatus] = useState(appointment.status);
-  const [statusLabel, setStatusLabel] = useState(appointment.statusLabel);
+  const route = useRoute();
+  // Navigasyondan ya tam obje gelir ya da sadece ID gelir (bildirimden)
+  const initialAppointment = route.params?.appointment;
+  const appointmentId = route.params?.appointmentId || initialAppointment?.id;
+
+  const [appointment, setAppointment] = useState(initialAppointment);
+  const [status, setStatus] = useState(initialAppointment?.status || 'Pending');
+  const [statusLabel, setStatusLabel] = useState(initialAppointment?.statusLabel || '');
+  const [loading, setLoading] = useState(!initialAppointment);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!initialAppointment && appointmentId) {
+      // API'den randevu bilgilerini çek (Yeni eklediğimiz endpoint)
+      api.get(`/api/salon-dashboard/appointments/${appointmentId}`)
+        .then((r) => {
+          setAppointment(r.data);
+          setStatus(r.data.status);
+          setStatusLabel(r.data.statusLabel);
+        })
+        .catch((e) => {
+          Alert.alert('Hata', 'Randevu detayları yüklenemedi.');
+          navigation.goBack();
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [appointmentId, initialAppointment]);
 
   const handleAction = async (action, confirmMsg) => {
     Alert.alert('Emin misiniz?', confirmMsg, [
@@ -38,6 +61,14 @@ export default function SalonAppointmentDetailScreen() {
   };
 
   const sc = STATUS_COLORS[status] || STATUS_COLORS.Pending;
+
+  if (loading || !appointment) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>

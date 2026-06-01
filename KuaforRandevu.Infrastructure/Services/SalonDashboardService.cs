@@ -13,11 +13,13 @@ public class SalonDashboardService : ISalonDashboardService
 {
     private readonly AppDbContext _db;
     private readonly UserManager<AppUser> _userManager;
+    private readonly INotificationService _notificationSvc;
 
-    public SalonDashboardService(AppDbContext db, UserManager<AppUser> userManager)
+    public SalonDashboardService(AppDbContext db, UserManager<AppUser> userManager, INotificationService notificationSvc)
     {
         _db = db;
         _userManager = userManager;
+        _notificationSvc = notificationSvc;
     }
 
     // ── Dashboard İstatistikleri ──────────────────────────────────────
@@ -81,17 +83,48 @@ public class SalonDashboardService : ISalonDashboardService
 
         var list = await query.OrderByDescending(a => a.AppointedAt).ToListAsync(ct);
 
-        return list.Select(a => new SalonAppointmentListDto
+        return list.Select(a =>
+        {
+            var expired = a.Status is AppointmentStatus.Pending or AppointmentStatus.Confirmed
+                && a.AppointedAt.AddMinutes(a.DurationMinutes) < DateTime.Now;
+
+            return new SalonAppointmentListDto
+            {
+                Id = a.Id,
+                CustomerName = $"{a.Customer.FirstName} {a.Customer.LastName}".Trim(),
+                BarberName = a.Barber.DisplayName,
+                AppointedAt = a.AppointedAt,
+                DurationMinutes = a.DurationMinutes,
+                Status = expired ? "Expired" : a.Status.ToString(),
+                StatusLabel = expired ? "Süresi Doldu" : StatusLabel(a.Status),
+                Notes = a.Notes,
+            };
+        }).ToList();
+    }
+
+    public async Task<SalonAppointmentListDto> GetAppointmentAsync(string ownerId, int appointmentId, CancellationToken ct = default)
+    {
+        var a = await _db.Appointments
+            .Include(appt => appt.Customer)
+            .Include(appt => appt.Barber)
+            .Include(appt => appt.Salon)
+            .FirstOrDefaultAsync(appt => appt.Id == appointmentId && appt.Salon.OwnerId == ownerId, ct)
+            ?? throw new Exception("Randevu bulunamadı veya yetkiniz yok.");
+
+        var expired = a.Status is AppointmentStatus.Pending or AppointmentStatus.Confirmed
+            && a.AppointedAt.AddMinutes(a.DurationMinutes) < DateTime.Now;
+
+        return new SalonAppointmentListDto
         {
             Id = a.Id,
             CustomerName = $"{a.Customer.FirstName} {a.Customer.LastName}".Trim(),
             BarberName = a.Barber.DisplayName,
             AppointedAt = a.AppointedAt,
             DurationMinutes = a.DurationMinutes,
-            Status = a.Status.ToString(),
-            StatusLabel = StatusLabel(a.Status),
+            Status = expired ? "Expired" : a.Status.ToString(),
+            StatusLabel = expired ? "Süresi Doldu" : StatusLabel(a.Status),
             Notes = a.Notes,
-        }).ToList();
+        };
     }
 
     // ── Randevu Onayla ────────────────────────────────────────────────
@@ -103,6 +136,15 @@ public class SalonDashboardService : ISalonDashboardService
         appt.Status = AppointmentStatus.Confirmed;
         appt.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+
+        // Müşteriye bildirim gönder
+        var salon = await _db.Salons.AsNoTracking().FirstOrDefaultAsync(s => s.Id == appt.SalonId, ct);
+        await _notificationSvc.CreateAndSendAsync(
+            appt.CustomerId,
+            "Randevu Onaylandı ✅",
+            $"{salon?.Name ?? "Salon"} randevunuz onaylandı. Tarih: {appt.AppointedAt:dd MMM yyyy HH:mm}",
+            NotificationType.AppointmentConfirmed,
+            appt.Id, ct);
     }
 
     // ── Salon Tarafından İptal ────────────────────────────────────────
@@ -114,6 +156,15 @@ public class SalonDashboardService : ISalonDashboardService
         appt.Status = AppointmentStatus.Cancelled;
         appt.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+
+        // Müşteriye bildirim gönder
+        var salonC = await _db.Salons.AsNoTracking().FirstOrDefaultAsync(s => s.Id == appt.SalonId, ct);
+        await _notificationSvc.CreateAndSendAsync(
+            appt.CustomerId,
+            "Randevu İptal Edildi ❌",
+            $"{salonC?.Name ?? "Salon"} randevunuz iptal edildi. Tarih: {appt.AppointedAt:dd MMM yyyy HH:mm}",
+            NotificationType.AppointmentCancelled,
+            appt.Id, ct);
     }
 
     // ── Randevu Tamamla ───────────────────────────────────────────────
@@ -125,6 +176,15 @@ public class SalonDashboardService : ISalonDashboardService
         appt.Status = AppointmentStatus.Completed;
         appt.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+
+        // Müşteriye bildirim gönder
+        var salonD = await _db.Salons.AsNoTracking().FirstOrDefaultAsync(s => s.Id == appt.SalonId, ct);
+        await _notificationSvc.CreateAndSendAsync(
+            appt.CustomerId,
+            "Randevu Tamamlandı ✨",
+            $"{salonD?.Name ?? "Salon"} randevunuz tamamlandı. Değerlendirme yapmayı unutmayın!",
+            NotificationType.AppointmentCompleted,
+            appt.Id, ct);
     }
 
     // ── Berber Listele ────────────────────────────────────────────────

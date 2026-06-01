@@ -10,6 +10,7 @@ public interface ISalonDashboardService
 
     // ── Randevu Yönetimi ───────────────────────────────────────────
     Task<IReadOnlyList<SalonAppointmentListDto>> GetSalonAppointmentsAsync(string ownerId, int salonId, string? statusFilter, CancellationToken ct = default);
+    Task<SalonAppointmentListDto> GetAppointmentAsync(string ownerId, int appointmentId, CancellationToken ct = default);
     Task ConfirmAsync(int appointmentId, string ownerId, CancellationToken ct = default);
     Task CancelByOwnerAsync(int appointmentId, string ownerId, CancellationToken ct = default);
     Task CompleteAsync(int appointmentId, string ownerId, CancellationToken ct = default);

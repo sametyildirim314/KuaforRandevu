@@ -65,4 +65,5 @@ export const STATUS_COLORS = {
   Confirmed: { bg: COLORS.successLight, border: COLORS.success, text: '#065F46' },
   Completed: { bg: '#F3F4F6',           border: '#6B7280',      text: '#374151' },
   Cancelled: { bg: COLORS.dangerLight,  border: COLORS.danger,  text: '#991B1B' },
+  Expired:   { bg: '#FDE8E8',           border: '#B33939',      text: '#7B1A1A' },
 };

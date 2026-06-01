@@ -4,6 +4,8 @@ import HomeScreen from '../screens/main/HomeScreen';
 import AppointmentsScreen from '../screens/main/AppointmentsScreen';
 import FavoritesScreen from '../screens/main/FavoritesScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
+import NotificationsScreen from '../screens/main/NotificationsScreen';
+import useNotificationStore from '../store/notificationStore';
 
 const Tab = createBottomTabNavigator();
 
@@ -11,6 +13,7 @@ function TabIcon({ name, focused }) {
   const icons = {
     Home: '🏠',
     Appointments: '📅',
+    Notifications: '🔔',
     Favorites: '❤️',
     Profile: '👤',
   };
@@ -18,6 +21,8 @@ function TabIcon({ name, focused }) {
 }
 
 export default function MainTab() {
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -44,6 +49,14 @@ export default function MainTab() {
         name="Appointments"
         component={AppointmentsScreen}
         options={{ title: 'Randevular' }}
+      />
+      <Tab.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{
+          title: 'Bildirimler',
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+        }}
       />
       <Tab.Screen
         name="Favorites"

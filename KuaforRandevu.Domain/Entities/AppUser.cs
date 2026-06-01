@@ -12,4 +12,7 @@ public class AppUser : IdentityUser // IdentityUser'dan miras alıyoruz.
     public string Role { get; set; } = "Customer"; // Customer | Barber | SalonOwner | Admin
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;
+
+    // Expo Push Notification Token — cihazdan gelen token burada saklanır
+    public string? ExpoPushToken { get; set; }
 }

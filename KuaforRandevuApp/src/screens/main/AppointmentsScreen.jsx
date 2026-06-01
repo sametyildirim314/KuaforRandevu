@@ -19,6 +19,7 @@ const STATUS_COLORS = {
   Confirmed: { bg: '#00b894', txt: '#fff' },
   Completed: { bg: '#636E72', txt: '#fff' },
   Cancelled: { bg: '#e74c3c', txt: '#fff' },
+  Expired:   { bg: '#B33939', txt: '#fff' },
 };
 
 export default function AppointmentsScreen() {
@@ -39,7 +40,7 @@ export default function AppointmentsScreen() {
   // Sekmeye göre filtrele
   const filtered = appointments.filter((a) => {
     if (activeTab === 'active') return a.status === 'Pending' || a.status === 'Confirmed';
-    if (activeTab === 'past') return a.status === 'Completed';
+    if (activeTab === 'past') return a.status === 'Completed' || a.status === 'Expired';
     if (activeTab === 'cancelled') return a.status === 'Cancelled';
     return true;
   });
