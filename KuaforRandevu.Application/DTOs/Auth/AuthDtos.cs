@@ -42,4 +42,5 @@ public class UserInfoDto
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public int? SalonId { get; set; } // SalonOwner ise sahip olduğu ilk salonun ID'si
+    public int? BarberId { get; set; } // Barber ise kuaförün ID'si
 }

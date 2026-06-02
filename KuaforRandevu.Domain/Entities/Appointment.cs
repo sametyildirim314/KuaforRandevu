@@ -20,6 +20,7 @@ public class Appointment
 
     public DateTime AppointedAt { get; set; }     // Randevu zamanı
     public int DurationMinutes { get; set; } = 30; // Seans süresi
+    public decimal Price { get; set; } = 0; // Randevudan elde edilen gelir
 
     public AppointmentStatus Status { get; set; } = AppointmentStatus.Pending;
     public string? Notes { get; set; }

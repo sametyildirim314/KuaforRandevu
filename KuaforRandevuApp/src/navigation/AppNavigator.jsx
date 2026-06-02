@@ -7,6 +7,7 @@ import AuthStack from './AuthStack';
 import MainStack from './MainStack';
 import SalonStack from './SalonStack';
 import AdminStack from './AdminStack';
+import BarberStack from './BarberStack';
 import { COLORS } from '../utils/theme';
 import signalRService from '../services/signalRService';
 import { registerForPushNotificationsAsync } from '../services/pushNotificationService';
@@ -45,6 +46,7 @@ export default function AppNavigator() {
   // Kullanıcı rolüne göre hangi navigasyon akışının gösterileceğini belirle
   const isSalonOwner = user?.role === 'SalonOwner';
   const isAdmin = user?.role === 'Admin';
+  const isBarber = user?.role === 'Barber';
 
   return (
     // NavigationContainer, tüm navigasyon yapısını sarmalayan ana bileşendir
@@ -56,6 +58,8 @@ export default function AppNavigator() {
             <Stack.Screen name="Admin" component={AdminStack} />
           ) : isSalonOwner ? (
             <Stack.Screen name="Salon" component={SalonStack} />
+          ) : isBarber ? (
+            <Stack.Screen name="Barber" component={BarberStack} />
           ) : (
             <Stack.Screen name="Main" component={MainStack} />
           )

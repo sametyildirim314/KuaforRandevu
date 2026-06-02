@@ -90,6 +90,7 @@ builder.Services.AddScoped<ISignalRNotificationService, SignalRNotificationServi
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IBarberDashboardService, BarberDashboardService>();
 builder.Services.AddHttpClient(); // Expo Push API için
 builder.Services.AddHostedService<AppointmentReminderService>(); // Randevu hatırlatma
 

@@ -113,6 +113,16 @@ public class AuthService : IAuthService
                 .FirstOrDefaultAsync();
         }
 
+        // Barber ise kuaförün ID'sini bul
+        int? barberId = null;
+        if (user.Role == "Barber")
+        {
+            barberId = await _db.Barbers
+                .Where(b => b.UserId == user.Id && b.IsActive)
+                .Select(b => (int?)b.Id)
+                .FirstOrDefaultAsync();
+        }
+
         return new AuthResponseDto
         {
             AccessToken = accessToken,
@@ -125,6 +135,7 @@ public class AuthService : IAuthService
                 Email = user.Email!,
                 Role = user.Role,
                 SalonId = salonId,
+                BarberId = barberId
             }
         };
     }
