@@ -89,6 +89,7 @@ builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<ISignalRNotificationService, SignalRNotificationService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddHttpClient(); // Expo Push API için
 builder.Services.AddHostedService<AppointmentReminderService>(); // Randevu hatırlatma
 
@@ -155,6 +156,14 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
     db.Database.Migrate();
+
+    // ── Admin Kullanıcısı ──────────────────────────────────────────
+    var adminUser = userManager.FindByEmailAsync("admin@kuafor.com").GetAwaiter().GetResult();
+    if (adminUser == null)
+    {
+        adminUser = new AppUser { FirstName = "Sistem", LastName = "Yöneticisi", Email = "admin@kuafor.com", UserName = "admin@kuafor.com", Role = "Admin" };
+        userManager.CreateAsync(adminUser, "Admin123!").GetAwaiter().GetResult();
+    }
 
     // ── Salon sahiplerini oluştur ──────────────────────────────────
     (string Email, string First, string Last)[] ownerSeeds =

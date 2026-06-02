@@ -1,3 +1,5 @@
+
+using KuaforRandevu.Domain.Enums;
 namespace KuaforRandevu.Domain.Entities;
 
 public class Salon
@@ -10,6 +12,9 @@ public class Salon
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // Admin panelinden onay durumu
+    public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
 
     // Salon sahibi — bir kullanıcı birden fazla salona sahip olabilir (1:N)
     public string OwnerId { get; set; } = string.Empty;

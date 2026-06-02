@@ -6,6 +6,7 @@ import authStore from '../store/authStore';
 import AuthStack from './AuthStack';
 import MainStack from './MainStack';
 import SalonStack from './SalonStack';
+import AdminStack from './AdminStack';
 import { COLORS } from '../utils/theme';
 import signalRService from '../services/signalRService';
 import { registerForPushNotificationsAsync } from '../services/pushNotificationService';
@@ -43,6 +44,7 @@ export default function AppNavigator() {
 
   // Kullanıcı rolüne göre hangi navigasyon akışının gösterileceğini belirle
   const isSalonOwner = user?.role === 'SalonOwner';
+  const isAdmin = user?.role === 'Admin';
 
   return (
     // NavigationContainer, tüm navigasyon yapısını sarmalayan ana bileşendir
@@ -50,7 +52,9 @@ export default function AppNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           // Giriş yapılmış — role göre yönlendir
-          isSalonOwner ? (
+          isAdmin ? (
+            <Stack.Screen name="Admin" component={AdminStack} />
+          ) : isSalonOwner ? (
             <Stack.Screen name="Salon" component={SalonStack} />
           ) : (
             <Stack.Screen name="Main" component={MainStack} />

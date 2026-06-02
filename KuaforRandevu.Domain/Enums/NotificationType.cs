@@ -12,4 +12,5 @@ public static class NotificationType
     public const string AppointmentCompleted = "appointment_completed";
     public const string AppointmentReminder  = "appointment_reminder";
     public const string NewAppointment       = "new_appointment";
+    public const string SystemAlert          = "system_alert";
 }
