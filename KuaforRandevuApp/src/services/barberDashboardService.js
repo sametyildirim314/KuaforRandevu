@@ -6,6 +6,12 @@ const barberDashboardService = {
     return response.data;
   },
 
+  getAppointments: async (barberId, status) => {
+    const params = status ? { status } : {};
+    const response = await api.get(`/api/barbers/${barberId}/appointments`, { params });
+    return response.data;
+  },
+
   getDailySchedule: async (barberId, date) => {
     // date: YYYY-MM-DD
     const response = await api.get(`/api/barbers/${barberId}/schedule`, { params: { date } });

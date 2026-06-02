@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../utils/theme';
 
 import BarberDashboardScreen from '../screens/barber/BarberDashboardScreen';
+import BarberAppointmentsScreen from '../screens/barber/BarberAppointmentsScreen';
 import BarberEarningsScreen from '../screens/barber/BarberEarningsScreen';
 import BarberWorkingHoursScreen from '../screens/barber/BarberWorkingHoursScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
@@ -29,6 +30,8 @@ export default function BarberTab() {
 
           if (route.name === 'Dashboard') {
             iconName = focused ? 'calendar' : 'calendar-outline';
+          } else if (route.name === 'Appointments') {
+            iconName = focused ? 'clipboard' : 'clipboard-outline';
           } else if (route.name === 'Earnings') {
             iconName = focused ? 'cash' : 'cash-outline';
           } else if (route.name === 'WorkingHours') {
@@ -42,6 +45,7 @@ export default function BarberTab() {
       })}
     >
       <Tab.Screen name="Dashboard" component={BarberDashboardScreen} options={{ title: 'Program' }} />
+      <Tab.Screen name="Appointments" component={BarberAppointmentsScreen} options={{ title: 'Randevular' }} />
       <Tab.Screen name="Earnings" component={BarberEarningsScreen} options={{ title: 'Gelirler' }} />
       <Tab.Screen name="WorkingHours" component={BarberWorkingHoursScreen} options={{ title: 'Mesai' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profil' }} />

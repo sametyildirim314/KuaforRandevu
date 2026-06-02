@@ -26,8 +26,10 @@ public class BarberDashboardService : IBarberDashboardService
             .ToListAsync(ct);
 
         var totalAppointmentsToday = todayAppointments.Count;
-        var pendingCount = todayAppointments.Count(a => a.Status == AppointmentStatus.Pending);
         var todayEarnings = todayAppointments.Where(a => a.Status == AppointmentStatus.Completed).Sum(a => a.Price);
+
+        var pendingCount = await _db.Appointments
+            .CountAsync(a => a.BarberId == barberId && a.Status == AppointmentStatus.Pending, ct);
 
         return new BarberDashboardSummaryDto
         {
@@ -43,21 +45,58 @@ public class BarberDashboardService : IBarberDashboardService
         var endOfDay = startOfDay.AddDays(1);
 
         var appointments = await _db.Appointments
-            .Include(a => a.Barber)
-            .Include(a => a.Salon)
-            .Include(a => a.Customer)
             .Where(a => a.BarberId == barberId && a.AppointedAt >= startOfDay && a.AppointedAt < endOfDay)
             .OrderBy(a => a.AppointedAt)
             .Select(a => new AppointmentListDto
             {
                 Id = a.Id,
                 BarberId = a.BarberId,
+                SalonId = a.SalonId,
                 BarberName = a.Barber.DisplayName,
                 SalonName = a.Salon.Name,
+                CustomerName = a.Customer.FirstName + " " + a.Customer.LastName,
                 AppointedAt = a.AppointedAt,
                 DurationMinutes = a.DurationMinutes,
                 Status = a.Status.ToString(),
-                StatusLabel = GetStatusLabel(a.Status)
+                StatusLabel = a.Status == AppointmentStatus.Pending ? "Bekliyor"
+                            : a.Status == AppointmentStatus.Confirmed ? "Onaylandı"
+                            : a.Status == AppointmentStatus.Cancelled ? "İptal Edildi"
+                            : a.Status == AppointmentStatus.Completed ? "Tamamlandı"
+                            : "Bilinmiyor",
+                Notes = a.Notes
+            })
+            .ToListAsync(ct);
+
+        return appointments;
+    }
+
+    public async Task<List<AppointmentListDto>> GetAppointmentsAsync(int barberId, string? statusFilter, CancellationToken ct = default)
+    {
+        var query = _db.Appointments
+            .Where(a => a.BarberId == barberId);
+
+        if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<AppointmentStatus>(statusFilter, out var status))
+            query = query.Where(a => a.Status == status);
+
+        var appointments = await query
+            .OrderByDescending(a => a.AppointedAt)
+            .Select(a => new AppointmentListDto
+            {
+                Id = a.Id,
+                BarberId = a.BarberId,
+                SalonId = a.SalonId,
+                BarberName = a.Barber.DisplayName,
+                SalonName = a.Salon.Name,
+                CustomerName = a.Customer.FirstName + " " + a.Customer.LastName,
+                AppointedAt = a.AppointedAt,
+                DurationMinutes = a.DurationMinutes,
+                Status = a.Status.ToString(),
+                StatusLabel = a.Status == AppointmentStatus.Pending ? "Bekliyor"
+                            : a.Status == AppointmentStatus.Confirmed ? "Onaylandı"
+                            : a.Status == AppointmentStatus.Cancelled ? "İptal Edildi"
+                            : a.Status == AppointmentStatus.Completed ? "Tamamlandı"
+                            : "Bilinmiyor",
+                Notes = a.Notes
             })
             .ToListAsync(ct);
 

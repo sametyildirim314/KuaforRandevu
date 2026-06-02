@@ -13,4 +13,5 @@ public interface IBarberDashboardService
     Task UpdateWorkingHoursAsync(int barberId, BarberWorkingHoursDto dto, CancellationToken ct = default);
     
     Task UpdateAppointmentPriceAsync(int barberId, int appointmentId, decimal price, CancellationToken ct = default);
+    Task<List<AppointmentListDto>> GetAppointmentsAsync(int barberId, string? statusFilter, CancellationToken ct = default);
 }

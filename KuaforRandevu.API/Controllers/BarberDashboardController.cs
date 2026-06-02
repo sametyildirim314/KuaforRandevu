@@ -38,6 +38,13 @@ public class BarberDashboardController : ControllerBase
         return Ok(schedule);
     }
 
+    [HttpGet("appointments")]
+    public async Task<IActionResult> GetAppointments(int barberId, [FromQuery] string? status, CancellationToken ct)
+    {
+        var appointments = await _barberDashboardService.GetAppointmentsAsync(barberId, status, ct);
+        return Ok(appointments);
+    }
+
     [HttpGet("earnings")]
     public async Task<IActionResult> GetEarnings(int barberId, CancellationToken ct)
     {
