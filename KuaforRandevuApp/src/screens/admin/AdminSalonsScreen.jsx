@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import adminService from '../../services/adminService';
 import { COLORS } from '../../utils/theme';
 
@@ -49,7 +50,7 @@ export default function AdminSalonsScreen() {
   if (loading) return <ActivityIndicator style={styles.center} size="large" color={COLORS.primary} />;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.headerTitle}>Salon Başvuruları</Text>
       <FlatList
         data={salons}
@@ -80,14 +81,14 @@ export default function AdminSalonsScreen() {
           );
         }}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center' },
   container: { flex: 1, backgroundColor: COLORS.background },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', margin: 20, marginTop: 50 },
+  headerTitle: { fontSize: 22, fontWeight: 'bold', margin: 20, marginTop: 10 },
   card: { backgroundColor: COLORS.card, padding: 15, borderRadius: 10, marginBottom: 15, elevation: 2 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   name: { fontSize: 18, fontWeight: 'bold', flex: 1 },
@@ -95,6 +96,6 @@ const styles = StyleSheet.create({
   detail: { color: COLORS.textSecondary, marginBottom: 4 },
   actions: { flexDirection: 'row', gap: 10, marginTop: 15 },
   btnApprove: { flex: 1, backgroundColor: COLORS.success, padding: 12, borderRadius: 8, alignItems: 'center' },
-  btnReject: { flex: 1, borderWidth: 2, borderColor: COLORS.danger, padding: 10, borderRadius: 8, alignItems: 'center' },
+  btnReject: { flex: 1, backgroundColor: COLORS.danger, padding: 12, borderRadius: 8, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: 'bold' }
 });

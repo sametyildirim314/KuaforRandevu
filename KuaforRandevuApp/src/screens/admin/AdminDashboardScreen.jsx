@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import adminService from '../../services/adminService';
 import { COLORS, SHADOW } from '../../utils/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,12 +36,15 @@ export default function AdminDashboardScreen() {
     return <ActivityIndicator style={styles.center} size="large" color={COLORS.primary} />;
   }
 
+  const insets = useSafeAreaInsets();
+
   return (
     <ScrollView 
       style={styles.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <View style={styles.header}>
+      <StatusBar style="light" />
+      <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
         <Text style={styles.title}>Sistem Özeti</Text>
         <Text style={styles.subtitle}>Genel istatistikler ve bekleyen işlemler</Text>
       </View>
@@ -69,7 +74,7 @@ function StatCard({ title, value, icon, color }) {
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { padding: 20, paddingTop: 60, backgroundColor: COLORS.primary, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
+  header: { padding: 20, backgroundColor: COLORS.primary, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
   title: { fontSize: 28, fontWeight: 'bold', color: '#fff' },
   subtitle: { fontSize: 14, color: '#e0e0e0', marginTop: 5 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', padding: 10, marginTop: 10 },

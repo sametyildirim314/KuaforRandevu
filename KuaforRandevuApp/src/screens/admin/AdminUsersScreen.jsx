@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import adminService from '../../services/adminService';
 import { COLORS } from '../../utils/theme';
 
@@ -56,7 +57,7 @@ export default function AdminUsersScreen() {
   if (loading) return <ActivityIndicator style={styles.center} size="large" color={COLORS.primary} />;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.headerTitle}>Kullanıcı Yönetimi</Text>
       <FlatList
         data={users}
@@ -84,14 +85,14 @@ export default function AdminUsersScreen() {
           </View>
         )}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center' },
   container: { flex: 1, backgroundColor: COLORS.background },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', margin: 20, marginTop: 50 },
+  headerTitle: { fontSize: 22, fontWeight: 'bold', margin: 20, marginTop: 10 },
   card: { backgroundColor: COLORS.card, padding: 15, borderRadius: 10, marginBottom: 15, elevation: 2 },
   cardBanned: { backgroundColor: '#ffeaea' },
   info: { marginBottom: 10 },

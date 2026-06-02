@@ -4,6 +4,7 @@
 4. Hafta videosu : https://youtu.be/ixtQoElrCN8
 5. Hafta videosu : https://youtube.com/shorts/ghwlY2QD79g?feature=share
 6. Hafta videosu : https://youtube.com/shorts/-z6Fv7H9cjc
+7. Hafta videosu : https://youtube.com/shorts/LylHZWehpog
 
 # 💈 Kuaför Randevu — Barbershop Appointment System
 
