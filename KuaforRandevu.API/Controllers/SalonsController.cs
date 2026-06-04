@@ -18,6 +18,7 @@ public class SalonsController : ControllerBase
     /// <summary>Aktif kuaför salonlarının listesi (giriş gerekmez)</summary>
     [HttpGet]
     [AllowAnonymous]
+    [ResponseCache(Duration = 60, VaryByQueryKeys = new[] { "*" })]//
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
         var list = await _salonService.GetAllAsync(ct);
@@ -45,6 +46,7 @@ public class SalonsController : ControllerBase
     /// <summary>Gelişmiş salon arama ve filtreleme (giriş gerekmez)</summary>
     [HttpGet("search")]
     [AllowAnonymous]
+    [ResponseCache(Duration = 30, VaryByQueryKeys = new[] { "*" })] // Bu satır, endpoint'i 30 saniye boyunca cacheler. Yani her 30 saniyede bir veri tabanından veri çeker.
     public async Task<IActionResult> Search(
         [FromQuery] string? q, 
         [FromQuery] string? category, 

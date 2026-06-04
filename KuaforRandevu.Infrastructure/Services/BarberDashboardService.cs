@@ -45,6 +45,7 @@ public class BarberDashboardService : IBarberDashboardService
         var endOfDay = startOfDay.AddDays(1);
 
         var appointments = await _db.Appointments
+            .AsNoTracking()
             .Where(a => a.BarberId == barberId && a.AppointedAt >= startOfDay && a.AppointedAt < endOfDay)
             .OrderBy(a => a.AppointedAt)
             .Select(a => new AppointmentListDto
@@ -73,6 +74,7 @@ public class BarberDashboardService : IBarberDashboardService
     public async Task<List<AppointmentListDto>> GetAppointmentsAsync(int barberId, string? statusFilter, CancellationToken ct = default)
     {
         var query = _db.Appointments
+            .AsNoTracking()
             .Where(a => a.BarberId == barberId);
 
         if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<AppointmentStatus>(statusFilter, out var status))

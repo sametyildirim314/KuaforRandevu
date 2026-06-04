@@ -1,7 +1,8 @@
+import React, { memo } from 'react';
 import {TouchableOpacity,Text,StyleSheet,ActivityIndicator,} from 'react-native';
 
 // Reusable (Tekrar kullanılabilir) buton bileşeni
-export default function Button({
+const Button = memo(function Button({
   title, // Butonun üzerinde yazacak metin
   onPress, // Butona basıldığında çalışacak fonksiyon
   variant = 'primary', // Butonun stil tipi (primary, secondary, outline)
@@ -46,7 +47,9 @@ export default function Button({
       )}
     </TouchableOpacity>
   );
-}
+});
+
+export default Button;
 
 const styles = StyleSheet.create({
   button: {

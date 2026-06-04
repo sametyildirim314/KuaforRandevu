@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, memo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator,
   RefreshControl, TextInput, Modal, ScrollView,
@@ -126,6 +126,25 @@ export default function HomeScreen() {
     loadSalons(q, category, minRating, maxPrice);
   };
 
+  const renderSalonItem = useCallback(({ item }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('SalonDetail', { salonId: item.id })}
+      activeOpacity={0.8}
+    >
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardTitle}>{item.name}</Text>
+        <Text style={styles.arrow}>→</Text>
+      </View>
+      <Text style={styles.cardMeta}>
+        📍 {item.city} · {item.address}
+      </Text>
+      {item.phone ? (
+        <Text style={styles.cardPhone}>📞 {item.phone}</Text>
+      ) : null}
+    </TouchableOpacity>
+  ), [navigation]);
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <Text style={styles.welcome}>Hoş geldiniz, {user?.fullName || 'Kullanıcı'}! 👋</Text>
@@ -228,24 +247,11 @@ export default function HomeScreen() {
           ListEmptyComponent={
             <Text style={styles.empty}>Aradığınız kriterlere uygun salon bulunamadı.</Text>
           }
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() => navigation.navigate('SalonDetail', { salonId: item.id })}
-              activeOpacity={0.8}
-            >
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                <Text style={styles.arrow}>→</Text>
-              </View>
-              <Text style={styles.cardMeta}>
-                📍 {item.city} · {item.address}
-              </Text>
-              {item.phone ? (
-                <Text style={styles.cardPhone}>📞 {item.phone}</Text>
-              ) : null}
-            </TouchableOpacity>
-          )}
+          renderItem={renderSalonItem}
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          windowSize={5}
+          removeClippedSubviews={true}
           contentContainerStyle={styles.listContent}
         />
       )}

@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
+using Serilog;
 using KuaforRandevu.API.Hubs;
 using KuaforRandevu.API.Middleware;
 using KuaforRandevu.API.Services;
@@ -15,6 +16,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Serilog Yapılandırması ──────────────────────────────────────────
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // ── Veritabanı ──────────────────────────────────────────────────────
 var useSqlite = builder.Configuration.GetValue<bool>("UseSqlite");
@@ -132,6 +143,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddResponseCaching(); // Response Caching servisi eklendi
 builder.Services.AddSignalR(); // Gerçek zamanlı bildirimler için
 
 builder.Services.AddRateLimiter(options =>
@@ -172,6 +184,7 @@ app.UseCors("DevCors");
 app.UseStaticFiles(); // Serve static files from wwwroot
 app.UseAuthentication(); // Önce authentication
 app.UseAuthorization();  // Sonra authorization
+app.UseResponseCaching(); // Rate limiting öncesi caching
 app.UseRateLimiter();    // Rate limiting middleware
 
 app.MapControllers().RequireRateLimiting("Global");
@@ -373,4 +386,16 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run();
+try
+{
+    Log.Information("Uygulama başlatılıyor...");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Uygulama başlatılamadı.");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

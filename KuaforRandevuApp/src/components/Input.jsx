@@ -1,6 +1,7 @@
+import React, { memo } from 'react';
 import { View, TextInput, Text, StyleSheet } from 'react-native';
 
-export default function Input({
+const Input = memo(function Input({
   label,
   value,
   onChangeText,
@@ -32,7 +33,9 @@ export default function Input({
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
-}
+});
+
+export default Input;
 
 const styles = StyleSheet.create({
   container: {
