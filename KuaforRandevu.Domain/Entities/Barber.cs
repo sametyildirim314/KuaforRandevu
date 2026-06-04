@@ -18,7 +18,7 @@ public class Barber
     public int SlotDurationMinutes { get; set; } = 30; // Her seans 30 dk
 
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     // Değerlendirme istatistikleri — her review sonrası otomatik güncellenir
     public double AverageRating { get; set; } = 0;

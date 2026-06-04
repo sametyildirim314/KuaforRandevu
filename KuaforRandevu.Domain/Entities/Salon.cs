@@ -11,7 +11,7 @@ public class Salon
     public string? Phone { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     // Admin panelinden onay durumu
     public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;

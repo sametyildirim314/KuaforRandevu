@@ -18,7 +18,7 @@ public class BarberDashboardService : IBarberDashboardService
 
     public async Task<BarberDashboardSummaryDto> GetDashboardSummaryAsync(int barberId, CancellationToken ct = default)
     {
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.Now.Date;
         var tomorrow = today.AddDays(1);
 
         var todayAppointments = await _db.Appointments
@@ -113,7 +113,7 @@ public class BarberDashboardService : IBarberDashboardService
 
     public async Task<BarberEarningsDto> GetEarningsAsync(int barberId, CancellationToken ct = default)
     {
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.Now.Date;
         var tomorrow = today.AddDays(1);
         
         // Calculate start of current week (assuming Monday)

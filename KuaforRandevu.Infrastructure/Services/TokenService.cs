@@ -35,7 +35,7 @@ public class TokenService
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(
+            expires: DateTime.Now.AddMinutes(
                 int.Parse(_config["Jwt:AccessTokenMinutes"] ?? "60")),
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
         );

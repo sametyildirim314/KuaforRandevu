@@ -127,7 +127,7 @@ public class AuthService : IAuthService
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(60),
+            ExpiresAt = DateTime.Now.AddMinutes(60),
             User = new UserInfoDto
             {
                 Id = user.Id,
@@ -139,4 +139,4 @@ public class AuthService : IAuthService
             }
         };
     }
-}
+}

@@ -321,7 +321,7 @@ using (var scope = app.Services.CreateScope())
                 
                 // Zaman belirleme (dün, bugün, yarın)
                 int dayOffset = random.Next(-4, 3);
-                var appointedAt = DateTime.UtcNow.AddDays(dayOffset).Date.AddHours(random.Next(9, 17));
+                var appointedAt = DateTime.Now.AddDays(dayOffset).Date.AddHours(random.Next(9, 17));
 
                 AppointmentStatus status = AppointmentStatus.Pending;
 
@@ -347,7 +347,7 @@ using (var scope = app.Services.CreateScope())
                     Status = status,
                     Price = price,
                     Notes = random.NextDouble() > 0.7 ? "Saç ve sakal kesimi lütfen." : null,
-                    CreatedAt = DateTime.UtcNow.AddDays(-5)
+                    CreatedAt = DateTime.Now.AddDays(-5)
                 });
             }
         }

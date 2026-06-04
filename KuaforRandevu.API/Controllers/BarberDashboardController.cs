@@ -33,7 +33,7 @@ public class BarberDashboardController : ControllerBase
     [HttpGet("schedule")]
     public async Task<IActionResult> GetDailySchedule(int barberId, [FromQuery] DateTime date, CancellationToken ct)
     {
-        if (date == default) date = DateTime.UtcNow.Date;
+        if (date == default) date = DateTime.Now.Date;
         var schedule = await _barberDashboardService.GetDailyScheduleAsync(barberId, date, ct);
         return Ok(schedule);
     }

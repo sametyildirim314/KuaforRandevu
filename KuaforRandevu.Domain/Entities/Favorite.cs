@@ -17,5 +17,5 @@ public class Favorite
     public int SalonId { get; set; }
     public Salon Salon { get; set; } = null!;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 }

@@ -134,7 +134,7 @@ public class SalonDashboardService : ISalonDashboardService
         if (appt.Status != AppointmentStatus.Pending)
             throw new Exception("Yalnızca 'Beklemede' durumundaki randevular onaylanabilir.");
         appt.Status = AppointmentStatus.Confirmed;
-        appt.UpdatedAt = DateTime.UtcNow;
+        appt.UpdatedAt = DateTime.Now;
         await _db.SaveChangesAsync(ct);
 
         // Müşteriye bildirim gönder
@@ -154,7 +154,7 @@ public class SalonDashboardService : ISalonDashboardService
         if (appt.Status is AppointmentStatus.Completed or AppointmentStatus.Cancelled)
             throw new Exception("Tamamlanmış veya zaten iptal edilmiş randevu iptal edilemez.");
         appt.Status = AppointmentStatus.Cancelled;
-        appt.UpdatedAt = DateTime.UtcNow;
+        appt.UpdatedAt = DateTime.Now;
         await _db.SaveChangesAsync(ct);
 
         // Müşteriye bildirim gönder
@@ -174,7 +174,7 @@ public class SalonDashboardService : ISalonDashboardService
         if (appt.Status != AppointmentStatus.Confirmed)
             throw new Exception("Yalnızca 'Onaylandı' durumundaki randevular tamamlanabilir.");
         appt.Status = AppointmentStatus.Completed;
-        appt.UpdatedAt = DateTime.UtcNow;
+        appt.UpdatedAt = DateTime.Now;
         await _db.SaveChangesAsync(ct);
 
         // Müşteriye bildirim gönder

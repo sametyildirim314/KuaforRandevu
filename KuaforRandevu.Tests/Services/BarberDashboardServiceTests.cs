@@ -27,7 +27,7 @@ public class BarberDashboardServiceTests
     {
         // Arrange
         int barberId = 1;
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.Now.Date;
 
         _db.Appointments.AddRange(
             new Appointment { Id = 1, BarberId = barberId, AppointedAt = today.AddHours(1), Status = AppointmentStatus.Completed, Price = 100 },
@@ -50,7 +50,7 @@ public class BarberDashboardServiceTests
     {
         // Arrange
         int barberId = 1;
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.Now.Date;
         var yesterday = today.AddDays(-1);
         var tomorrow = today.AddDays(1);
 

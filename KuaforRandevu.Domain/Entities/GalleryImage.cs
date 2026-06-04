@@ -16,5 +16,5 @@ public class GalleryImage
     // Resmin sunucu üzerindeki URL yolu
     public string ImageUrl { get; set; } = string.Empty;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 }

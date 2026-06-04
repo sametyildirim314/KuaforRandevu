@@ -117,7 +117,7 @@ public class AppointmentService : IAppointmentService
             throw new Exception("Bu randevu zaten tamamlanmış veya iptal edilmiş.");
 
         appt.Status = AppointmentStatus.Cancelled;
-        appt.UpdatedAt = DateTime.UtcNow;
+        appt.UpdatedAt = DateTime.Now;
         await _db.SaveChangesAsync(ct);
     }
 
@@ -130,7 +130,7 @@ public class AppointmentService : IAppointmentService
             ?? throw new Exception("Randevu bulunamadı.");
 
         appt.Status = status;
-        appt.UpdatedAt = DateTime.UtcNow;
+        appt.UpdatedAt = DateTime.Now;
         await _db.SaveChangesAsync(ct);
 
         // Müşteriye bildirim gönder (Senkronizasyon)

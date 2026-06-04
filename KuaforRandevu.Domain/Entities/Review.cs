@@ -23,5 +23,5 @@ public class Review
     public int Rating { get; set; }       // 1–5 arası puan
     public string? Comment { get; set; }  // İsteğe bağlı yorum (max 500 karakter)
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 }
