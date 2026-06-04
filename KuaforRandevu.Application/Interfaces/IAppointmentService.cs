@@ -12,5 +12,5 @@ public interface IAppointmentService
     Task CancelAsync(int id, string userId, CancellationToken ct = default);
     Task UpdateStatusAsync(int id, AppointmentStatus status, CancellationToken ct = default);
     Task<IReadOnlyList<AvailableSlotDto>> GetAvailableSlotsAsync(int barberId, DateOnly date, CancellationToken ct = default);
-    Task<IReadOnlyList<AppointmentListDto>> GetBarberAppointmentsAsync(int barberId, CancellationToken ct = default);
+    Task<IReadOnlyList<AppointmentListDto>> GetBarberAppointmentsAsync(int barberId, string? statusFilter = null, CancellationToken ct = default);
 }

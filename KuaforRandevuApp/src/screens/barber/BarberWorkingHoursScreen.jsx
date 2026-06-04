@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import authStore from '../../store/authStore';
 import barberDashboardService from '../../services/barberDashboardService';
 import { COLORS, SHADOW } from '../../utils/theme';
 import SkeletonLoader from '../../components/SkeletonLoader';
 
 export default function BarberWorkingHoursScreen() {
+  const navigation = useNavigation();
   const { user } = authStore();
   const [hours, setHours] = useState({ workStartHour: '09', workEndHour: '18', slotDurationMinutes: '30' });
   const [loading, setLoading] = useState(true);
@@ -63,7 +66,12 @@ export default function BarberWorkingHoursScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.headerTitle}>Mesai Saatleri</Text>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Mesai Saatleri</Text>
+      </View>
       
       <View style={styles.card}>
         <Text style={styles.label}>Mesai Başlangıcı (Saat: 0-23)</Text>
@@ -103,7 +111,9 @@ export default function BarberWorkingHoursScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', margin: 20, color: COLORS.textPrimary },
+  header: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 15, marginTop: 15, marginBottom: 5 },
+  backButton: { padding: 5, marginRight: 10 },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: COLORS.textPrimary },
   card: { backgroundColor: COLORS.card, padding: 20, margin: 15, borderRadius: 10, ...SHADOW },
   label: { fontSize: 14, fontWeight: 'bold', marginBottom: 5, color: COLORS.textSecondary },
   input: { borderWidth: 1, borderColor: '#ccc', padding: 12, borderRadius: 8, marginBottom: 15, fontSize: 16 },

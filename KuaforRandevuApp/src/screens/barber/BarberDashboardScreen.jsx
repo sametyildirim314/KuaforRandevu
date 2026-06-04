@@ -46,8 +46,8 @@ export default function BarberDashboardScreen() {
       { text: 'İptal', style: 'cancel' },
       { text: 'Evet', onPress: async () => {
         try {
-          // Salon API endpoint'i üzerinden status güncelleme 
-          await api.put(`/api/salons/${item.salonId || user.salonId}/appointments/${item.id}/status`, { status: newStatus });
+          // Randevu API endpoint'i üzerinden status güncelleme 
+          await api.put(`/api/appointments/${item.id}/status`, { status: newStatus });
           Alert.alert('Bilgi', 'Durum başarıyla güncellendi.');
           fetchDashboardData();
         } catch (e) {
@@ -57,31 +57,21 @@ export default function BarberDashboardScreen() {
     ]);
   };
 
-  const handleOpenCompleteModal = (item) => {
-    setSelectedAppointment(item);
-    setPriceInput('');
-    setModalVisible(true);
-  };
-
-  const handleCompleteAppointment = async () => {
-    if (!priceInput || isNaN(priceInput)) {
-      Alert.alert('Hata', 'Lütfen geçerli bir fiyat giriniz.');
-      return;
-    }
-    
-    try {
-      // Önce fiyatı güncelle (BarberDashboardController)
-      await api.put(`/api/barbers/${barberId}/appointments/${selectedAppointment.id}/price`, { price: parseFloat(priceInput) });
-      
-      // Ardından statüyü Completed (3) yap
-      await api.put(`/api/salons/${selectedAppointment.salonId || user.salonId}/appointments/${selectedAppointment.id}/status`, { status: 3 });
-      
-      Alert.alert('Başarılı', 'Randevu tamamlandı ve gelir eklendi.');
-      setModalVisible(false);
-      fetchDashboardData();
-    } catch (e) {
-      Alert.alert('Hata', 'Randevu tamamlanırken bir hata oluştu.');
-    }
+  const handleCompleteAppointment = async (item) => {
+    Alert.alert('Emin misiniz?', `Randevu tamamlandı olarak işaretlenecek. Toplam Tutar: ${item.price} ₺`, [
+      { text: 'İptal', style: 'cancel' },
+      { text: 'Evet', onPress: async () => {
+        try {
+          // Statüyü Completed (2) yap. Fiyat zaten kayıtta mevcut.
+          await api.put(`/api/appointments/${item.id}/status`, { status: 2 });
+          
+          Alert.alert('Başarılı', 'Randevu tamamlandı ve gelir eklendi.');
+          fetchDashboardData();
+        } catch (e) {
+          Alert.alert('Hata', 'Randevu tamamlanırken bir hata oluştu.');
+        }
+      }}
+    ]);
   };
 
   if (loading) {
@@ -137,14 +127,14 @@ export default function BarberDashboardScreen() {
                 <TouchableOpacity style={styles.btnApprove} onPress={() => handleUpdateStatus(item, 1)}>
                   <Text style={styles.btnText}>✓ Onayla</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.btnReject} onPress={() => handleUpdateStatus(item, 2)}>
+                <TouchableOpacity style={styles.btnReject} onPress={() => handleUpdateStatus(item, 3)}>
                   <Text style={styles.btnText}>✗ Reddet</Text>
                 </TouchableOpacity>
               </View>
             )}
             
             {item.status === 'Confirmed' && (
-              <TouchableOpacity style={styles.btnComplete} onPress={() => handleOpenCompleteModal(item)}>
+              <TouchableOpacity style={styles.btnComplete} onPress={() => handleCompleteAppointment(item)}>
                 <Text style={styles.btnText}>Randevuyu Tamamla</Text>
               </TouchableOpacity>
             )}
@@ -152,30 +142,7 @@ export default function BarberDashboardScreen() {
         )}
       />
 
-      {/* Fiyat Girme Modalı */}
-      <Modal visible={isModalVisible} transparent={true} animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Randevuyu Tamamla</Text>
-            <Text style={styles.modalDesc}>Müşteriden alınan ücreti (₺) giriniz:</Text>
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder="Örn: 250"
-              value={priceInput}
-              onChangeText={setPriceInput}
-            />
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={[styles.btnComplete, { backgroundColor: COLORS.danger, flex: 1, marginRight: 10 }]} onPress={() => setModalVisible(false)}>
-                <Text style={styles.btnText}>İptal</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.btnComplete, { flex: 1 }]} onPress={handleCompleteAppointment}>
-                <Text style={styles.btnText}>Kaydet</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+
 
     </SafeAreaView>
   );

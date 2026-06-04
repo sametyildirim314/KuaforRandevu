@@ -331,6 +331,12 @@ using (var scope = app.Services.CreateScope())
                      status = random.NextDouble() > 0.4 ? AppointmentStatus.Confirmed : AppointmentStatus.Pending;
                 }
 
+                decimal price = 0;
+                if (status == AppointmentStatus.Completed)
+                {
+                    price = random.Next(150, 500);
+                }
+
                 appointments.Add(new Appointment
                 {
                     CustomerId = customer.Id,
@@ -339,6 +345,7 @@ using (var scope = app.Services.CreateScope())
                     AppointedAt = appointedAt,
                     DurationMinutes = barber.SlotDurationMinutes,
                     Status = status,
+                    Price = price,
                     Notes = random.NextDouble() > 0.7 ? "Saç ve sakal kesimi lütfen." : null,
                     CreatedAt = DateTime.UtcNow.AddDays(-5)
                 });
@@ -346,43 +353,57 @@ using (var scope = app.Services.CreateScope())
         }
         db.Appointments.AddRange(appointments);
         db.SaveChanges(); // Randevular kaydedilsin ki ID'leri alınabilsin
+    }
 
-        // Değerlendirmeler ekleyelim (Tamamlanan randevular için)
-        if (!db.Reviews.Any())
+    // TEK SEFERLİK: Eğer halihazırda 0 TL gelirli tamamlanmış randevu varsa, onları seed datasıyla doldur
+    var emptyPricedAppointments = db.Appointments.Where(a => a.Status == AppointmentStatus.Completed && a.Price == 0).ToList();
+    if (emptyPricedAppointments.Any())
+    {
+        var random = new Random();
+        foreach (var appt in emptyPricedAppointments)
         {
-            var completedAppointments = db.Appointments.Where(a => a.Status == AppointmentStatus.Completed).ToList();
-            var reviews = new List<Review>();
-            foreach (var appt in completedAppointments)
-            {
-                // %80 ihtimalle yorum yapılsın
-                if (random.NextDouble() > 0.2)
-                {
-                    int rating = random.Next(3, 6); // 3 ile 5 arası puan
-                    reviews.Add(new Review
-                    {
-                        AppointmentId = appt.Id,
-                        BarberId = appt.BarberId,
-                        AuthorId = appt.CustomerId,
-                        Rating = rating,
-                        Comment = rating == 5 ? "Harika bir deneyimdi, çok teşekkürler!" : (rating == 4 ? "Güzeldi ama biraz bekledim." : "İdare eder bir kesimdi.")
-                    });
-                }
-            }
-            db.Reviews.AddRange(reviews);
-            db.SaveChanges();
-
-            // Berberlerin puanlarını güncelle
-            foreach (var barber in barbers)
-            {
-                var barberReviews = db.Reviews.Where(r => r.BarberId == barber.Id).ToList();
-                if (barberReviews.Any())
-                {
-                    barber.AverageRating = barberReviews.Average(r => r.Rating);
-                    barber.ReviewCount = barberReviews.Count;
-                }
-            }
-            db.SaveChanges();
+            appt.Price = random.Next(150, 500);
         }
+        db.SaveChanges();
+    }
+
+    // Değerlendirmeler ekleyelim (Tamamlanan randevular için)
+    if (!db.Reviews.Any())
+    {
+        var completedAppointments = db.Appointments.Where(a => a.Status == AppointmentStatus.Completed).ToList();
+        var reviews = new List<Review>();
+        var random = new Random();
+        foreach (var appt in completedAppointments)
+        {
+            // %80 ihtimalle yorum yapılsın
+            if (random.NextDouble() > 0.2)
+            {
+                int rating = random.Next(3, 6); // 3 ile 5 arası puan
+                reviews.Add(new Review
+                {
+                    AppointmentId = appt.Id,
+                    BarberId = appt.BarberId,
+                    AuthorId = appt.CustomerId,
+                    Rating = rating,
+                    Comment = rating == 5 ? "Harika bir deneyimdi, çok teşekkürler!" : (rating == 4 ? "Güzeldi ama biraz bekledim." : "İdare eder bir kesimdi.")
+                });
+            }
+        }
+        db.Reviews.AddRange(reviews);
+        db.SaveChanges();
+
+        // Berberlerin puanlarını güncelle
+        var allBarbers = db.Barbers.ToList();
+        foreach (var barber in allBarbers)
+        {
+            var barberReviews = db.Reviews.Where(r => r.BarberId == barber.Id).ToList();
+            if (barberReviews.Any())
+            {
+                barber.AverageRating = barberReviews.Average(r => r.Rating);
+                barber.ReviewCount = barberReviews.Count;
+            }
+        }
+        db.SaveChanges();
     }
 }
 

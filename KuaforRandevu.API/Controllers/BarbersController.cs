@@ -18,11 +18,11 @@ public class BarbersController : ControllerBase
         _reviewSvc = reviewSvc;
     }
 
-    /// <summary>Berberin randevuları</summary>
+    /// <summary>Berberin randevuları (opsiyonel status filtresi ile)</summary>
     [HttpGet("{id:int}/appointments")]
-    public async Task<IActionResult> GetAppointments(int id, CancellationToken ct)
+    public async Task<IActionResult> GetAppointments(int id, [FromQuery] string? status, CancellationToken ct)
     {
-        var list = await _appointmentSvc.GetBarberAppointmentsAsync(id, ct);
+        var list = await _appointmentSvc.GetBarberAppointmentsAsync(id, status, ct);
         return Ok(list);
     }
 

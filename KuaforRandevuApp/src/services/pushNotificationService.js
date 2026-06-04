@@ -43,10 +43,21 @@ export const registerForPushNotificationsAsync = async () => {
       const projectId =
         Constants?.expoConfig?.extra?.eas?.projectId ??
         Constants?.easConfig?.projectId;
-        
-      const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId,
-      });
+      
+      if (!projectId) {
+        console.log('Push notification: projectId bulunamadı (Expo Go ortamında normal). Atlanıyor.');
+        return;
+      }
+
+      let tokenData;
+      try {
+        tokenData = await Notifications.getExpoPushTokenAsync({
+          projectId,
+        });
+      } catch (tokenError) {
+        console.log('Push token alınamadı (Expo Go sınırlaması):', tokenError.message);
+        return;
+      }
       token = tokenData?.data;
       
       if (token) {

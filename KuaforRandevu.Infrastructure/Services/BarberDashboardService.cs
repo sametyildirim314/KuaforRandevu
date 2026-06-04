@@ -46,6 +46,9 @@ public class BarberDashboardService : IBarberDashboardService
 
         var appointments = await _db.Appointments
             .AsNoTracking()
+            .Include(a => a.Customer)
+            .Include(a => a.Barber)
+            .Include(a => a.Salon)
             .Where(a => a.BarberId == barberId && a.AppointedAt >= startOfDay && a.AppointedAt < endOfDay)
             .OrderBy(a => a.AppointedAt)
             .Select(a => new AppointmentListDto
@@ -53,9 +56,9 @@ public class BarberDashboardService : IBarberDashboardService
                 Id = a.Id,
                 BarberId = a.BarberId,
                 SalonId = a.SalonId,
-                BarberName = a.Barber.DisplayName,
-                SalonName = a.Salon.Name,
-                CustomerName = a.Customer.FirstName + " " + a.Customer.LastName,
+                BarberName = a.Barber != null ? a.Barber.DisplayName : "Bilinmeyen",
+                SalonName = a.Salon != null ? a.Salon.Name : "Bilinmeyen",
+                CustomerName = a.Customer != null ? (a.Customer.FirstName + " " + a.Customer.LastName).Trim() : "Misafir",
                 AppointedAt = a.AppointedAt,
                 DurationMinutes = a.DurationMinutes,
                 Status = a.Status.ToString(),
@@ -75,6 +78,9 @@ public class BarberDashboardService : IBarberDashboardService
     {
         var query = _db.Appointments
             .AsNoTracking()
+            .Include(a => a.Customer)
+            .Include(a => a.Barber)
+            .Include(a => a.Salon)
             .Where(a => a.BarberId == barberId);
 
         if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<AppointmentStatus>(statusFilter, out var status))
@@ -87,9 +93,9 @@ public class BarberDashboardService : IBarberDashboardService
                 Id = a.Id,
                 BarberId = a.BarberId,
                 SalonId = a.SalonId,
-                BarberName = a.Barber.DisplayName,
-                SalonName = a.Salon.Name,
-                CustomerName = a.Customer.FirstName + " " + a.Customer.LastName,
+                BarberName = a.Barber != null ? a.Barber.DisplayName : "Bilinmeyen",
+                SalonName = a.Salon != null ? a.Salon.Name : "Bilinmeyen",
+                CustomerName = a.Customer != null ? (a.Customer.FirstName + " " + a.Customer.LastName).Trim() : "Misafir",
                 AppointedAt = a.AppointedAt,
                 DurationMinutes = a.DurationMinutes,
                 Status = a.Status.ToString(),

@@ -5,6 +5,7 @@ public class CreateAppointmentDto
     public int BarberId { get; set; }
     public int SalonId { get; set; }
     public DateTime AppointedAt { get; set; }
+    public decimal Price { get; set; }
     public string? Notes { get; set; }
 }
 
@@ -18,6 +19,7 @@ public class AppointmentListDto
     public string CustomerName { get; set; } = string.Empty;
     public DateTime AppointedAt { get; set; }
     public int DurationMinutes { get; set; }
+    public decimal Price { get; set; }
     public string Status { get; set; } = string.Empty;      // "Pending", "Confirmed"...
     public string StatusLabel { get; set; } = string.Empty; // "Beklemede", "Onaylandı"...
     public string? Notes { get; set; }

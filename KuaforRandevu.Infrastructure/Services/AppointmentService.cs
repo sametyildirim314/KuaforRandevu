@@ -54,6 +54,7 @@ public class AppointmentService : IAppointmentService
             SalonId = dto.SalonId,
             AppointedAt = dto.AppointedAt,
             DurationMinutes = barber.SlotDurationMinutes,
+            Price = dto.Price,
             Notes = dto.Notes,
             Status = AppointmentStatus.Pending,
         };
@@ -123,12 +124,39 @@ public class AppointmentService : IAppointmentService
     // ── Durum Güncelle (Berber tarafı) ───────────────────────────────
     public async Task UpdateStatusAsync(int id, AppointmentStatus status, CancellationToken ct = default)
     {
-        var appt = await _db.Appointments.FindAsync(new object[] { id }, ct)
+        var appt = await _db.Appointments
+            .Include(a => a.Barber)
+            .FirstOrDefaultAsync(a => a.Id == id, ct)
             ?? throw new Exception("Randevu bulunamadı.");
 
         appt.Status = status;
         appt.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+
+        // Müşteriye bildirim gönder (Senkronizasyon)
+        var msg = status switch
+        {
+            AppointmentStatus.Confirmed => $"Randevunuz onaylandı! ({appt.AppointedAt:dd MMM HH:mm})",
+            AppointmentStatus.Completed => $"Randevunuz tamamlandı. Bizi tercih ettiğiniz için teşekkürler!",
+            AppointmentStatus.Cancelled => $"Üzgünüz, randevunuz iptal edildi. ({appt.AppointedAt:dd MMM HH:mm})",
+            _ => "Randevu durumunuz güncellendi."
+        };
+
+        var notifType = status switch
+        {
+            AppointmentStatus.Confirmed => Domain.Enums.NotificationType.AppointmentConfirmed,
+            AppointmentStatus.Completed => Domain.Enums.NotificationType.AppointmentCompleted,
+            AppointmentStatus.Cancelled => Domain.Enums.NotificationType.AppointmentCancelled,
+            _ => Domain.Enums.NotificationType.SystemAlert
+        };
+
+        await _notificationSvc.CreateAndSendAsync(
+            appt.CustomerId,
+            "Randevu Güncellemesi",
+            msg,
+            notifType,
+            appt.Id,
+            ct);
     }
 
     // ── Müsait Saatler ────────────────────────────────────────────────
@@ -177,13 +205,22 @@ public class AppointmentService : IAppointmentService
     }
 
     // ── Berberin Randevuları ──────────────────────────────────────────
-    public async Task<IReadOnlyList<AppointmentListDto>> GetBarberAppointmentsAsync(int barberId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<AppointmentListDto>> GetBarberAppointmentsAsync(int barberId, string? statusFilter = null, CancellationToken ct = default)
     {
-        var list = await _db.Appointments
+        var query = _db.Appointments
             .AsNoTracking()
             .Include(a => a.Barber)
             .Include(a => a.Salon)
-            .Where(a => a.BarberId == barberId)
+            .Include(a => a.Customer)
+            .Where(a => a.BarberId == barberId);
+
+        // Status filtresi uygula
+        if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<AppointmentStatus>(statusFilter, out var status))
+        {
+            query = query.Where(a => a.Status == status);
+        }
+
+        var list = await query
             .OrderByDescending(a => a.AppointedAt)
             .ToListAsync(ct);
 
@@ -197,6 +234,7 @@ public class AppointmentService : IAppointmentService
             .AsNoTracking()
             .Include(a => a.Barber)
             .Include(a => a.Salon)
+            .Include(a => a.Customer)
             .FirstOrDefaultAsync(a => a.Id == id, ct);
 
         return appt == null ? null : ToDetailDto(appt);
@@ -210,16 +248,20 @@ public class AppointmentService : IAppointmentService
     private static AppointmentListDto ToListDto(Appointment a)
     {
         var expired = IsExpired(a);
-        return new()
+        return new AppointmentListDto
         {
             Id = a.Id,
             BarberId = a.BarberId,
-            BarberName = a.Barber.DisplayName,
-            SalonName = a.Salon.Name,
+            SalonId = a.SalonId,
+            BarberName = a.Barber?.DisplayName ?? string.Empty,
+            SalonName = a.Salon?.Name ?? string.Empty,
+            CustomerName = (a.Customer?.FirstName + " " + a.Customer?.LastName).Trim(),
             AppointedAt = a.AppointedAt,
             DurationMinutes = a.DurationMinutes,
+            Price = a.Price,
             Status = expired ? "Expired" : a.Status.ToString(),
             StatusLabel = expired ? "Süresi Doldu" : StatusLabel(a.Status),
+            Notes = a.Notes
         };
     }
 
@@ -230,8 +272,8 @@ public class AppointmentService : IAppointmentService
         {
             Id = a.Id,
             BarberId = a.BarberId,
-            BarberName = a.Barber.DisplayName,
-            SalonName = a.Salon.Name,
+            BarberName = a.Barber?.DisplayName ?? "Bilinmeyen",
+            SalonName = a.Salon?.Name ?? "Bilinmeyen",
             AppointedAt = a.AppointedAt,
             DurationMinutes = a.DurationMinutes,
             Status = expired ? "Expired" : a.Status.ToString(),

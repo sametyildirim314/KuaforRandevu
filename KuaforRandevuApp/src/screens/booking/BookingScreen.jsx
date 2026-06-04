@@ -8,14 +8,16 @@ import api from '../../services/api';
 import { API_ENDPOINTS } from '../../utils/constants';
 import appointmentStore from '../../store/appointmentStore';
 
-// Sonraki 14 günü üret (bugün hariç)
+// Sonraki 14 günü üret (bugün dahil)
 function getNextDays(count = 14) {
   const days = [];
   const now = new Date();
-  for (let i = 1; i <= count; i++) {
+  for (let i = 0; i < count; i++) {
     const d = new Date(now);
     d.setDate(now.getDate() + i);
-    const label = d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', weekday: 'short' });
+    let label = d.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', weekday: 'short' });
+    if (i === 0) label = `Bugün, ${label}`;
+    else if (i === 1) label = `Yarın, ${label}`;
     const value = d.toISOString().slice(0, 10); // YYYY-MM-DD
     days.push({ label, value, date: d });
   }
@@ -81,7 +83,7 @@ export default function BookingScreen() {
       // Seçilen hizmet adlarını not alanına ekle
       const serviceNames = selectedServices.map((s) => s.name).join(', ');
       const fullNotes = [`Hizmetler: ${serviceNames}`, notes].filter(Boolean).join('\n');
-      await createAppointment({ barberId: selectedBarber.id, salonId, appointedAt, notes: fullNotes });
+      await createAppointment({ barberId: selectedBarber.id, salonId, appointedAt, price: totalPrice, notes: fullNotes });
       Alert.alert('Başarılı! 🎉', 'Randevunuz oluşturuldu.', [
         { text: 'Randevularım', onPress: () => navigation.navigate('Tabs', { screen: 'Appointments' }) },
       ]);
