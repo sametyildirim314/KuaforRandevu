@@ -1,4 +1,6 @@
 using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 using KuaforRandevu.API.Hubs;
 using KuaforRandevu.API.Middleware;
 using KuaforRandevu.API.Services;
@@ -132,10 +134,32 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddControllers();
 builder.Services.AddSignalR(); // Gerçek zamanlı bildirimler için
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("Global", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 100;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 2;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
 var app = builder.Build();
 
 // ── Middleware Pipeline ───────────────────────────────────────────────
 app.UseMiddleware<ExceptionMiddleware>(); // Global hata yakalama — en üstte olmalı
+
+// Security Headers Middleware
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Append("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    await next();
+});
 
 if (app.Environment.IsDevelopment())
 {
@@ -148,7 +172,9 @@ app.UseCors("DevCors");
 app.UseStaticFiles(); // Serve static files from wwwroot
 app.UseAuthentication(); // Önce authentication
 app.UseAuthorization();  // Sonra authorization
-app.MapControllers();
+app.UseRateLimiter();    // Rate limiting middleware
+
+app.MapControllers().RequireRateLimiting("Global");
 app.MapHub<NotificationHub>("/hubs/notifications"); // SignalR hub mapping
 
 // ── Migration + Seed Data ─────────────────────────────────────────────

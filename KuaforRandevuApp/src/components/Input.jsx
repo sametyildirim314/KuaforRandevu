@@ -25,6 +25,9 @@ export default function Input({
         autoCapitalize={autoCapitalize}
         editable={editable}
         autoCorrect={false}
+        accessible={true}
+        accessibilityLabel={label || placeholder || 'Input'}
+        accessibilityHint="Metin girin"
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>

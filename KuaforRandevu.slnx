@@ -3,4 +3,5 @@
   <Project Path="KuaforRandevu.Application/KuaforRandevu.Application.csproj" />
   <Project Path="KuaforRandevu.Domain/KuaforRandevu.Domain.csproj" />
   <Project Path="KuaforRandevu.Infrastructure/KuaforRandevu.Infrastructure.csproj" />
+  <Project Path="KuaforRandevu.Tests/KuaforRandevu.Tests.csproj" />
 </Solution>

@@ -25,6 +25,10 @@ export default function Button({
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.8}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: disabled || loading }}
     >
       {/* Eğer işlem yapılıyorsa (loading true) spinner göster, değilse metni göster */}
       {loading ? (
